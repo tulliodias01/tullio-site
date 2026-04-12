@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    container_name: tullio_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tullio_imoveis
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: tullio_app
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/tullio_imoveis
+      JWT_SECRET: troque_esse_secret
+      SITE_URL: https://seu-dominio.com
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+
+  nginx:
+    image: nginx:alpine
+    container_name: tullio_nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+
+volumes:
+  pgdata:

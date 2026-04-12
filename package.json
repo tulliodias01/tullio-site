@@ -1,0 +1,25 @@
+{
+  "name": "tullio-imoveis-platform",
+  "version": "1.0.0",
+  "description": "Plataforma profissional de imóveis com admin, API, banco, SEO e leads.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed:admin": "node scripts/seed-admin.js",
+    "backup": "node scripts/backup.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.12.0",
+    "zod": "^3.23.8"
+  }
+}
