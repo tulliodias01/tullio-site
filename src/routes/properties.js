@@ -1,14 +1,17 @@
-const express = require("express");
+﻿const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const { z } = require("zod");
 const { query } = require("../db");
-const { requireAuth } = require("../middleware/auth");
+const { requireAuth, requireRole } = require("../middleware/auth");
 const { slugify } = require("../utils/slug");
+const { splitSensitiveDescription, sanitizeInternalNotesText } = require("../utils/sanitizePublicDescription");
 const config = require("../config");
 
 const router = express.Router();
+router.use(requireAuth);
+router.use(requireRole("admin", "owner"));
 
 if (!fs.existsSync(config.uploadsDir)) {
   fs.mkdirSync(config.uploadsDir, { recursive: true });
@@ -23,26 +26,127 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage, limits: { fileSize: 12 * 1024 * 1024, files: 20 } });
+const upload = multer({ storage });
 
 const propertySchema = z.object({
-  code: z.string().min(1),
-  title: z.string().min(3),
-  type: z.string().min(2),
-  badge: z.string().optional().default("⭐ DESTAQUE"),
-  location: z.string().min(3),
-  cep: z.string().trim().regex(/^\d{5}-?\d{3}$/, "CEP invalido. Use 00000-000."),
-  latitude: z.coerce.number().min(-90).max(90),
-  longitude: z.coerce.number().min(-180).max(180),
-  bedrooms: z.coerce.number().min(0),
-  bathrooms: z.coerce.number().min(0),
-  area: z.coerce.number().min(1),
-  status: z.string().optional().default("Pronto"),
-  price: z.coerce.number().min(1),
-  description: z.string().min(10),
-  is_published: z.coerce.boolean().optional().default(true),
+  code: z.string().optional().nullable(),
+  title: z.string().optional().nullable(),
+  type: z.string().optional().nullable(),
+  badge: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  cep: z.string().optional().nullable(),
+  latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+  longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
+  bedrooms: z.coerce.number().min(0).optional().nullable(),
+  bathrooms: z.coerce.number().min(0).optional().nullable(),
+  area: z.coerce.number().min(0).optional().nullable(),
+  status: z.string().optional().nullable(),
+  price: z.coerce.number().min(0).optional().nullable(),
+  description: z.string().optional().nullable(),
+  is_published: z.union([z.boolean(), z.string()]).optional().nullable(),
   image_urls: z.array(z.string().url()).optional().default([])
 });
+const visibilitySchema = z.object({
+  is_published: z.union([z.boolean(), z.string()])
+});
+
+function asText(value) {
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+}
+
+function asNullableText(value) {
+  const text = asText(value);
+  return text || null;
+}
+
+function asNumber(value, fallback = 0) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function asNullableNumber(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+function asBoolean(value, fallback = true) {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "boolean") return value;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "sim"].includes(normalized)) return true;
+  if (["false", "0", "no", "nao", "não"].includes(normalized)) return false;
+  return fallback;
+}
+
+function buildFallbackCode() {
+  return `imovel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function normalizePropertyBody(raw, fallback = {}) {
+  const fallbackCode = asText(fallback.code);
+  const code = asText(raw.code) || fallbackCode || buildFallbackCode();
+  const title = asText(raw.title) || asText(fallback.title) || "Imovel sem titulo";
+  const slugBase = asText(raw.title) || title || code;
+  const rawDescription = asText(raw.description) || asText(fallback.description);
+  const splitDescription = splitSensitiveDescription(rawDescription);
+
+  return {
+    code,
+    slug: slugify(slugBase) || slugify(code) || buildFallbackCode(),
+    title,
+    type: asText(raw.type) || asText(fallback.type) || "Nao informado",
+    badge: asText(raw.badge) || asText(fallback.badge) || "⭐ DESTAQUE",
+    location: asText(raw.location) || asText(fallback.location) || "Nao informado",
+    cep: asNullableText(raw.cep),
+    latitude: asNullableNumber(raw.latitude),
+    longitude: asNullableNumber(raw.longitude),
+    bedrooms: asNumber(raw.bedrooms, asNumber(fallback.bedrooms, 0)),
+    bathrooms: asNumber(raw.bathrooms, asNumber(fallback.bathrooms, 0)),
+    area: asNumber(raw.area, asNumber(fallback.area, 0)),
+    status: asText(raw.status) || asText(fallback.status) || "Pronto",
+    price: asNumber(raw.price, asNumber(fallback.price, 0)),
+    description: splitDescription.publicDescription,
+    internal_notes_from_description: splitDescription.internalDescription,
+    is_published: asBoolean(raw.is_published, asBoolean(fallback.is_published, true)),
+    image_urls: Array.isArray(raw.image_urls) ? raw.image_urls : []
+  };
+}
+
+function mergeInternalNotes(existing, extracted) {
+  const current = sanitizeInternalNotesText(asText(existing));
+  const extra = sanitizeInternalNotesText(asText(extracted));
+  if (!extra) return current || null;
+  const block = `Descricao interna: ${extra}`;
+
+  if (!current) return block;
+  if (current === extra) return block;
+  if (current.includes(extra)) return `Descricao interna: ${current}`;
+  return `Descricao interna: ${current}\n\n${extra}`;
+}
+
+async function upsertPrivateInternalNotes(propertyId, extractedNotes) {
+  const merged = mergeInternalNotes(null, extractedNotes);
+  if (!merged) {
+    await query("insert into property_private (property_id) values ($1) on conflict (property_id) do nothing", [propertyId]);
+    return;
+  }
+
+  await query(
+    `insert into property_private (property_id, internal_notes, updated_at)
+     values ($1, $2, now())
+     on conflict (property_id) do update set
+       internal_notes = case
+         when property_private.internal_notes is null or btrim(property_private.internal_notes) = '' then excluded.internal_notes
+         when position(excluded.internal_notes in property_private.internal_notes) > 0 then property_private.internal_notes
+         else property_private.internal_notes || E'\\n\\n' || excluded.internal_notes
+       end,
+       updated_at = now()`,
+    [propertyId, merged]
+  );
+}
 
 function dbToProperty(row) {
   return {
@@ -93,7 +197,7 @@ async function savePropertyVersion(propertyId, changedBy, payload) {
   );
 }
 
-router.get("/", requireAuth, async (_req, res) => {
+router.get("/", async (_req, res) => {
   const propRows = await query("select * from properties order by created_at desc");
   const items = propRows.rows.map(dbToProperty);
   const imagesMap = await loadPropertyImages(items.map((p) => p.id));
@@ -103,14 +207,14 @@ router.get("/", requireAuth, async (_req, res) => {
   res.json({ ok: true, items });
 });
 
-router.post("/", requireAuth, upload.array("images", 20), async (req, res) => {
+router.post("/", upload.array("images", 20), async (req, res) => {
   try {
-    const body = propertySchema.parse({
+    const parsed = propertySchema.parse({
       ...req.body,
       image_urls: req.body.image_urls ? JSON.parse(req.body.image_urls) : []
     });
+    const body = normalizePropertyBody(parsed);
 
-    const slug = slugify(body.title);
     const insert = await query(
       `insert into properties
       (code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, is_published)
@@ -118,7 +222,7 @@ router.post("/", requireAuth, upload.array("images", 20), async (req, res) => {
       returning *`,
       [
         body.code,
-        slug,
+        body.slug,
         body.title,
         body.type,
         body.badge,
@@ -137,6 +241,7 @@ router.post("/", requireAuth, upload.array("images", 20), async (req, res) => {
     );
 
     const property = insert.rows[0];
+    await upsertPrivateInternalNotes(property.id, body.internal_notes_from_description);
 
     const uploaded = (req.files || []).map((f) => `/uploads/${f.filename}`);
     const mergedImages = [...body.image_urls, ...uploaded];
@@ -150,26 +255,46 @@ router.post("/", requireAuth, upload.array("images", 20), async (req, res) => {
     await savePropertyVersion(property.id, req.user.sub, { action: "create", property });
     return res.status(201).json({ ok: true, item: dbToProperty(property) });
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados inválidos.", issues: err.issues });
-    return res.status(500).json({ ok: false, message: "Erro ao criar imóvel." });
+    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
+    return res.status(500).json({ ok: false, message: "Erro ao criar imovel." });
   }
 });
 
-router.put("/:id", requireAuth, upload.array("images", 20), async (req, res) => {
+router.patch("/:id/visibility", async (req, res) => {
   try {
-    const body = propertySchema.parse({
+    const parsed = visibilitySchema.parse(req.body || {});
+    const isPublished = asBoolean(parsed.is_published, true);
+    const updated = await query(
+      "update properties set is_published = $1, updated_at = now() where id = $2 returning *",
+      [isPublished, req.params.id]
+    );
+    if (!updated.rows.length) return res.status(404).json({ ok: false, message: "Imovel nao encontrado." });
+    await savePropertyVersion(req.params.id, req.user.sub, { action: "visibility", is_published: isPublished });
+    return res.json({ ok: true, item: dbToProperty(updated.rows[0]) });
+  } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
+    return res.status(500).json({ ok: false, message: "Erro ao atualizar publicacao." });
+  }
+});
+
+router.put("/:id", upload.array("images", 20), async (req, res) => {
+  try {
+    const current = await query("select * from properties where id = $1 limit 1", [req.params.id]);
+    if (!current.rows.length) return res.status(404).json({ ok: false, message: "Imovel nao encontrado." });
+
+    const parsed = propertySchema.parse({
       ...req.body,
       image_urls: req.body.image_urls ? JSON.parse(req.body.image_urls) : []
     });
+    const body = normalizePropertyBody(parsed, current.rows[0]);
 
-    const slug = slugify(body.title);
     const update = await query(
       `update properties
        set code=$1, slug=$2, title=$3, type=$4, badge=$5, location=$6, cep=$7, latitude=$8, longitude=$9, bedrooms=$10, bathrooms=$11, area=$12, status=$13, price=$14, description=$15, is_published=$16, updated_at=now()
        where id=$17 returning *`,
       [
         body.code,
-        slug,
+        body.slug,
         body.title,
         body.type,
         body.badge,
@@ -187,9 +312,10 @@ router.put("/:id", requireAuth, upload.array("images", 20), async (req, res) => 
         req.params.id
       ]
     );
-    if (!update.rows.length) return res.status(404).json({ ok: false, message: "Imóvel não encontrado." });
 
     const property = update.rows[0];
+    await upsertPrivateInternalNotes(property.id, body.internal_notes_from_description);
+
     const uploaded = (req.files || []).map((f) => `/uploads/${f.filename}`);
     const mergedImages = [...body.image_urls, ...uploaded];
     await query("delete from property_images where property_id = $1", [property.id]);
@@ -203,14 +329,14 @@ router.put("/:id", requireAuth, upload.array("images", 20), async (req, res) => 
     await savePropertyVersion(property.id, req.user.sub, { action: "update", property });
     return res.json({ ok: true, item: dbToProperty(property) });
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados inválidos.", issues: err.issues });
-    return res.status(500).json({ ok: false, message: "Erro ao atualizar imóvel." });
+    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
+    return res.status(500).json({ ok: false, message: "Erro ao atualizar imovel." });
   }
 });
 
-router.delete("/:id", requireAuth, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const deleted = await query("delete from properties where id = $1 returning *", [req.params.id]);
-  if (!deleted.rows.length) return res.status(404).json({ ok: false, message: "Imóvel não encontrado." });
+  if (!deleted.rows.length) return res.status(404).json({ ok: false, message: "Imovel nao encontrado." });
   await savePropertyVersion(req.params.id, req.user.sub, { action: "delete", property: deleted.rows[0] });
   return res.json({ ok: true });
 });

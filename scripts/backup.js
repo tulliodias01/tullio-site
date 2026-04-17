@@ -5,17 +5,19 @@ const config = require("../src/config");
 
 async function run() {
   if (!fs.existsSync(config.backupsDir)) fs.mkdirSync(config.backupsDir, { recursive: true });
-  const [properties, images, leads, events] = await Promise.all([
+  const [properties, images, leads, events, propertyPrivate] = await Promise.all([
     query("select * from properties"),
     query("select * from property_images"),
     query("select * from leads"),
-    query("select * from analytics_events")
+    query("select * from analytics_events"),
+    query("select * from property_private")
   ]);
 
   const payload = {
     exported_at: new Date().toISOString(),
     properties: properties.rows,
     property_images: images.rows,
+    property_private: propertyPrivate.rows,
     leads: leads.rows,
     analytics_events: events.rows
   };

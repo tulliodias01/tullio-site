@@ -6,6 +6,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const { healthcheck, query } = require("./db");
 const config = require("./config");
+const { sanitizePublicDescription } = require("./utils/sanitizePublicDescription");
 
 const authRoutes = require("./routes/auth");
 const propertyRoutes = require("./routes/properties");
@@ -98,13 +99,14 @@ fbq('track', 'PageView');
 }
 
 function renderPropertyPage(property, images) {
+  const safeDescription = sanitizePublicDescription(property.description);
   const cover = images.find((img) => img.is_cover)?.image_url || images[0]?.image_url || config.defaultMetaImage || "";
   const pageUrl = `${config.siteUrl}/imoveis/${property.slug}`;
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: property.title,
-    description: property.description,
+    description: safeDescription,
     image: images.map((i) => `${config.siteUrl}${i.image_url}`),
     offers: {
       "@type": "Offer",
@@ -121,11 +123,11 @@ function renderPropertyPage(property, images) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${property.title} | ${config.siteName}</title>
-  <meta name="description" content="${property.description}">
+  <meta name="description" content="${safeDescription}">
   <link rel="canonical" href="${pageUrl}">
   <meta property="og:type" content="website">
   <meta property="og:title" content="${property.title}">
-  <meta property="og:description" content="${property.description}">
+  <meta property="og:description" content="${safeDescription}">
   <meta property="og:url" content="${pageUrl}">
   <meta property="og:image" content="${cover ? `${config.siteUrl}${cover}` : ""}">
   <meta name="twitter:card" content="summary_large_image">
@@ -148,7 +150,7 @@ function renderPropertyPage(property, images) {
       <div class="content">
         <h1>${property.title}</h1>
         <p>${property.location} ${property.cep ? `• CEP ${property.cep}` : ""}</p>
-        <p>${property.description}</p>
+        <p>${safeDescription}</p>
         <p class="price">${Number(property.price).toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:0})}</p>
         <p>${property.bedrooms} quartos • ${property.bathrooms} banheiros • ${property.area}m²</p>
         <a class="btn" target="_blank" href="https://wa.me/5571992697769?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.title} (${property.code}).`) }">Falar no WhatsApp</a>

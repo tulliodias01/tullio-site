@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Tullio Imoveis</title>
+  <style>
+    :root{
+      --bg:#f1f5f9;
+      --card:#ffffff;
+      --ink:#1d2f43;
+      --muted:#5a6c7d;
+      --line:#d7e1ea;
+      --primary:#1e3a5f;
+      --gold:#d4af37;
+      --soft:#eef4fb;
+      --danger:#c62828;
+      --ok:#1f8a4c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1280px;margin:24px auto;padding:0 16px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+    .topbar h1{margin:0;font-size:1.55rem}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#e8f3ff;border:1px solid #c5d9ed;color:#1e3a5f;border-radius:999px;padding:6px 10px;font-size:.8rem;font-weight:700}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 24px rgba(10,28,46,.08);margin-bottom:16px}
+    .card h2,.card h3{margin:0 0 10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .row-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    label{display:block;font-size:12px;margin-bottom:5px;font-weight:700;color:#33485d}
+    input,select,textarea{
+      width:100%;padding:10px;border:1px solid #c9d6e3;border-radius:10px;
+      background:#fff;color:#203446;font-size:.94rem;outline:none;transition:border .2s,box-shadow .2s
+    }
+    input:focus,select:focus,textarea:focus{border-color:#7ea7cc;box-shadow:0 0 0 3px rgba(77,123,170,.14)}
+    textarea{min-height:92px;resize:vertical}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{
+      border:1px solid #1a3455;background:linear-gradient(180deg,#2b4f80 0%,#1e3a5f 65%,#16304f 100%);
+      color:#fff;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700
+    }
+    .btn.alt{background:#fff;color:#1e3a5f;border-color:#b8c9d9}
+    .btn.warn{background:linear-gradient(180deg,#ffd76d 0%,#d4af37 65%,#b99228 100%);color:#2c2507;border-color:#b99228}
+    .btn.danger{background:linear-gradient(180deg,#ef5350 0%,#d32f2f 70%,#b71c1c 100%);border-color:#a41515}
+    .hidden{display:none}
+    .hint{font-size:.8rem;color:var(--muted);margin-top:4px}
+    .helper{background:#f8fbff;border:1px dashed #bfd4e8;border-radius:10px;padding:10px;font-size:.85rem;color:#35516e}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+    .tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+    .tag{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d4e2ef;border-radius:10px;padding:8px}
+    .tag input{width:auto;padding:0;margin:0}
+    .item{border:1px solid #dae2e9;border-radius:10px;padding:10px;margin-bottom:10px;background:#fbfdff}
+    .item small{color:#5d7388}
+    .status{font-size:.78rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid}
+    .status.on{background:#e8f7ef;border-color:#b8e3cb;color:#16673a}
+    .status.off{background:#fff1f1;border-color:#f0c2c2;color:#9d1f1f}
+    .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}
+    .photo{position:relative;border-radius:10px;overflow:hidden;border:1px solid #d6e0ea;background:#edf3f9;height:74px}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo .cap{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.66rem;border-radius:999px;padding:2px 6px}
+    .login-msg{font-size:.9rem;color:var(--danger);min-height:1.2rem}
+    .ok-msg{font-size:.85rem;color:var(--ok)}
+    #cep-map-wrap{margin-top:8px}
+    #cep-map{height:240px;border:1px solid #d6e0ea;border-radius:10px;background:#eef3f8}
+    @media (max-width:980px){.grid,.row,.row-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Area Administrativa</h1>
+      <span class="pill">Cadastro inteligente de imoveis</span>
+    </div>
+
+    <div class="card" id="login-card">
+      <h3>Login do painel</h3>
+      <div class="row">
+        <div>
+          <label>Email</label>
+          <input id="login-email" type="email" autocomplete="username" placeholder="seu_email@dominio.com">
+        </div>
+        <div>
+          <label>Senha</label>
+          <input id="login-password" type="password" autocomplete="current-password" placeholder="Sua senha">
+        </div>
+        <div style="display:flex;align-items:end">
+          <button class="btn" id="login-btn" type="button">Entrar</button>
+        </div>
+      </div>
+      <p id="login-msg" class="login-msg"></p>
+    </div>
+
+    <div id="panel" class="hidden">
+      <div class="card">
+        <h2>Cadastro de Imovel</h2>
+        <div class="helper">
+          Fluxo otimizado: selecione tipo, bairro, etiqueta e caracteristicas. O codigo e o CEP podem ser sugeridos automaticamente.
+        </div>
+        <input id="p-id" type="hidden">
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Codigo</label>
+            <input id="p-code" placeholder="Gerado automaticamente" readonly>
+            <div class="hint">Codigo gerado automaticamente pelo sistema.</div>
+          </div>
+          <div>
+            <label>Titulo</label>
+            <input id="p-title" placeholder="Ex: Apartamento 3/4 na Barra">
+          </div>
+          <div>
+            <label>Tipo</label>
+            <select id="p-type">
+              <option>Apartamento</option>
+              <option>Casa</option>
+              <option>Comercial</option>
+              <option>Terreno</option>
+              <option value="Lançamento">Lançamento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Etiqueta</label>
+            <select id="p-badge-select">
+              <option>⭐ DESTAQUE</option>
+              <option>🆕 NOVO</option>
+              <option>💰 OPORTUNIDADE</option>
+              <option>🔥 ALTA PROCURA</option>
+              <option>🏡 EXCLUSIVO</option>
+              <option>📈 INVESTIMENTO</option>
+              <option value="__CUSTOM__">Personalizada</option>
+            </select>
+            <input id="p-badge-custom" class="hidden" placeholder="Digite a etiqueta personalizada">
+          </div>
+          <div>
+            <label>Bairro / Localizacao</label>
+            <select id="p-location-select">
+              <option value="">Selecionar bairro...</option>
+              <optgroup label="Salvador">
+                <option value="Barra">Barra</option>
+                <option value="Ondina">Ondina</option>
+                <option value="Vitória">Vitória</option>
+                <option value="Pituba">Pituba</option>
+                <option value="Itaigara">Itaigara</option>
+                <option value="Caminho das Árvores">Caminho das Árvores</option>
+                <option value="Horto Florestal">Horto Florestal</option>
+                <option value="Graça">Graça</option>
+                <option value="Rio Vermelho">Rio Vermelho</option>
+                <option value="Patamares">Patamares</option>
+                <option value="Stella Maris">Stella Maris</option>
+                <option value="Alphaville">Alphaville</option>
+                <option value="Centro">Centro</option>
+              </optgroup>
+              <optgroup label="Lauro de Freitas">
+                <option value="Buraquinho">Buraquinho</option>
+                <option value="Vilas do Atlântico">Vilas do Atlântico</option>
+                <option value="Ipitanga">Ipitanga</option>
+                <option value="Pitangueiras">Pitangueiras</option>
+                <option value="Centro - Lauro de Freitas">Centro - Lauro de Freitas</option>
+                <option value="Portão">Portão</option>
+                <option value="Caji">Caji</option>
+              </optgroup>
+              <option value="__CUSTOM__">Outro bairro/localizacao</option>
+            </select>
+            <input id="p-location" class="hidden" placeholder="Digite a localizacao completa">
+          </div>
+          <div>
+            <label>CEP</label>
+            <input id="p-cep" placeholder="00000-000">
+            <div class="hint">Sugestao automatica por bairro quando disponivel.</div>
+            <div class="hint" id="cep-address"></div>
+            <div id="cep-map-wrap">
+              <div class="hint">Mapa da localizacao identificada</div>
+              <div id="cep-map"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div><label>Quartos</label><input id="p-bedrooms" type="number" min="0" value="0"></div>
+          <div><label>Banheiros</label><input id="p-bathrooms" type="number" min="0" value="0"></div>
+          <div><label>Area (m²)</label><input id="p-area" type="number" min="1"></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Latitude (mapa)</label>
+            <input id="p-latitude" type="number" step="0.0000001" placeholder="-12.9718000">
+          </div>
+          <div>
+            <label>Longitude (mapa)</label>
+            <input id="p-longitude" type="number" step="0.0000001" placeholder="-38.5011000">
+          </div>
+          <div>
+            <label>Apoio rápido</label>
+            <button class="btn alt" id="map-open-btn" type="button">Abrir Google Maps da região</button>
+            <div class="hint">Copie as coordenadas do Maps e cole aqui.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Status</label>
+            <select id="p-status">
+              <option>Pronto</option>
+              <option>Lançamento</option>
+              <option>Em obra</option>
+              <option>Reservado</option>
+              <option>Vendido</option>
+            </select>
+          </div>
+          <div><label>Preco (R$)</label><input id="p-price" type="number" min="1" placeholder="850000"></div>
+          <div>
+            <label>Publicar?</label>
+            <select id="p-published"><option value="true">Sim</option><option value="false">Nao</option></select>
+          </div>
+        </div>
+
+        <div class="card" style="padding:12px;margin:12px 0">
+          <h3 style="margin-bottom:8px">Caracteristicas prontas</h3>
+          <div class="tag-grid" id="feature-tags"></div>
+          <div class="hint">Essas caracteristicas entram automaticamente no texto do anuncio.</div>
+        </div>
+
+        <div>
+          <label>Descricao</label>
+          <textarea id="p-description" placeholder="Descreva os diferenciais do imovel"></textarea>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label>Fotos (upload local)</label>
+            <input id="p-images" type="file" accept="image/*" multiple>
+            <div class="hint">A primeira imagem sera capa. Recomendado: 1600x900 ou maior.</div>
+          </div>
+          <div>
+            <label>Preview de fotos</label>
+            <div id="p-photo-preview" class="photos"></div>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+          <button class="btn" id="save-btn" type="button">Salvar imovel</button>
+          <button class="btn alt" id="clear-btn" type="button">Limpar</button>
+          <button class="btn alt" id="export-btn" type="button">Exportar backup</button>
+          <span id="form-msg" class="ok-msg"></span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="toolbar">
+            <h3>Imoveis cadastrados</h3>
+            <span class="pill" id="list-count">0 itens</span>
+          </div>
+          <div id="list"></div>
+        </div>
+        <div class="card">
+          <h3>Leads recentes</h3>
+          <div id="leads"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqlPOcPH8zOI2TiwZdwRs_KJUePHrtFEo&language=pt-BR&region=BR"></script>
+  <script>
+    let token = localStorage.getItem("admin_token") || "";
+    let currentImages = [];
+    let selectedFeatures = new Set();
+    let tempPreviewUrls = [];
+    let cepLookupTimer = null;
+    let lastCepLookup = "";
+    let cepLookupSeq = 0;
+    let cepMap = null;
+    let cepMarker = null;
+    let cepInfoWindow = null;
+    let cepGeocoder = null;
+    const FEATURES = [
+      "Varanda gourmet", "Suite", "Closet", "Armarios planejados", "Nascente", "Andar alto",
+      "Vista mar", "Piscina", "Academia", "Condominio fechado", "Portaria 24h", "Elevador",
+      "2 vagas", "3 vagas", "Pet friendly", "Proximo ao metro"
+    ];
+    const CEP_HINTS = {
+      "Barra":"40140-110", "Ondina":"40170-010", "Vitória":"40080-010", "Pituba":"41830-530",
+      "Itaigara":"41815-020", "Caminho das Árvores":"41820-021", "Horto Florestal":"40295-140",
+      "Graça":"40150-090", "Rio Vermelho":"41940-100", "Patamares":"41680-110",
+      "Stella Maris":"41600-500", "Alphaville":"41730-101", "Centro":"40020-000",
+      "Buraquinho":"42710-400", "Vilas do Atlântico":"42707-130", "Ipitanga":"42700-170",
+      "Pitangueiras":"42700-000", "Centro - Lauro de Freitas":"42702-000", "Portão":"42700-000", "Caji":"42700-000"
+    };
+
+    const IMAGE_MIN_WIDTH = 1400;
+    const IMAGE_MIN_HEIGHT = 900;
+    const IMAGE_MAX_SIZE_MB = 12;
+
+    const api = (url, opts = {}) => fetch(url, {
+      ...opts,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(opts.headers || {})
+      }
+    }).then(async (r) => {
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok && r.status === 401) {
+        localStorage.removeItem("admin_token");
+        token = "";
+      }
+      return body;
+    });
+
+    function q(id){ return document.getElementById(id); }
+    function setLoginMsg(msg){ q("login-msg").textContent = msg || ""; }
+    function setFormMsg(msg){ q("form-msg").textContent = msg || ""; }
+
+    function slugify(txt){
+      return String(txt || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    function normalizeCep(value){
+      const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+      if (digits.length <= 5) return digits;
+      return `${digits.slice(0,5)}-${digits.slice(5)}`;
+    }
+
+    function normalizeText(value){
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function uniqueFeatures(list){
+      return [...new Set((list || []).map((x) => String(x || "").trim()).filter(Boolean))];
+    }
+
+    function parseCoordinate(value){
+      const n = Number(String(value || "").replace(",", "."));
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function getImageMeta(file){
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.naturalWidth || 0, height: img.naturalHeight || 0 });
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Falha ao ler imagem"));
+        };
+        img.src = url;
+      });
+    }
+
+    async function validateImageQuality(files){
+      if (!files.length) return { ok: true };
+      for (const file of files) {
+        const maxBytes = IMAGE_MAX_SIZE_MB * 1024 * 1024;
+        if (file.size > maxBytes) {
+          return { ok: false, message: `A imagem \"${file.name}\" excede ${IMAGE_MAX_SIZE_MB}MB.` };
+        }
+        try {
+          const meta = await getImageMeta(file);
+          if (meta.width < IMAGE_MIN_WIDTH || meta.height < IMAGE_MIN_HEIGHT) {
+            return { ok: false, message: `A imagem \"${file.name}\" esta com baixa resolucao (${meta.width}x${meta.height}). Minimo recomendado: ${IMAGE_MIN_WIDTH}x${IMAGE_MIN_HEIGHT}.` };
+          }
+        } catch (_) {
+          return { ok: false, message: `Nao foi possivel validar a imagem \"${file.name}\".` };
+        }
+      }
+      return { ok: true };
+    }
+
+    function initCepMap() {
+      if (cepMap || !window.google || !google.maps) return;
+      const mapEl = q("cep-map");
+      if (!mapEl) return;
+      cepMap = new google.maps.Map(mapEl, {
+        center: { lat: -12.9718, lng: -38.5011 },
+        zoom: 11,
+        mapTypeId: "roadmap",
+        mapTypeControl: true,
+        streetViewControl: false,
+        fullscreenControl: true
+      });
+      cepInfoWindow = new google.maps.InfoWindow();
+      cepGeocoder = new google.maps.Geocoder();
+      cepMap.addListener("click", (event) => {
+        const lat = event?.latLng?.lat?.();
+        const lng = event?.latLng?.lng?.();
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        q("p-latitude").value = Number(lat).toFixed(7);
+        q("p-longitude").value = Number(lng).toFixed(7);
+        updateCepMap(lat, lng, "Coordenada ajustada manualmente");
+      });
+    }
+
+    function updateCepMap(lat, lng, label = "Localizacao do imovel") {
+      initCepMap();
+      if (!cepMap) return;
+      const position = { lat: Number(lat), lng: Number(lng) };
+      if (!Number.isFinite(position.lat) || !Number.isFinite(position.lng)) return;
+      if (cepMarker) cepMarker.setMap(null);
+      cepMarker = new google.maps.Marker({
+        position,
+        map: cepMap,
+        draggable: true,
+        title: label
+      });
+      cepMarker.addListener("dragend", (event) => {
+        const dragLat = event?.latLng?.lat?.();
+        const dragLng = event?.latLng?.lng?.();
+        if (!Number.isFinite(dragLat) || !Number.isFinite(dragLng)) return;
+        q("p-latitude").value = Number(dragLat).toFixed(7);
+        q("p-longitude").value = Number(dragLng).toFixed(7);
+      });
+      cepMap.setCenter(position);
+      cepMap.setZoom(16);
+      if (cepInfoWindow) {
+        cepInfoWindow.setContent(`<div style="font-size:13px">${label}</div>`);
+        cepInfoWindow.open({ anchor: cepMarker, map: cepMap });
+      }
+    }
+
+    async function googleGeocode(request) {
+      initCepMap();
+      if (!cepGeocoder) return null;
+      return new Promise((resolve) => {
+        cepGeocoder.geocode(request, (results, status) => {
+          if (status !== "OK" || !Array.isArray(results) || !results.length) return resolve(null);
+          const best = results[0];
+          const lat = best.geometry?.location?.lat?.();
+          const lng = best.geometry?.location?.lng?.();
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return resolve(null);
+          const precise = ["ROOFTOP", "RANGE_INTERPOLATED"].includes(String(best.geometry?.location_type || ""));
+          resolve({ lat, lng, precise });
+        });
+      });
+    }
+
+    async function geocodeAddress(addressText){
+      const query = String(addressText || "").trim();
+      if (!query) return null;
+      return googleGeocode({ address: query, region: "br" });
+    }
+
+    async function geocodeByCep(cepDigits, cidade = "", uf = "", bairro = "", rua = ""){
+      const candidates = [
+        [rua, bairro, cidade, uf, "Brasil"].filter(Boolean).join(", "),
+        [bairro, cidade, uf, cepDigits, "Brasil"].filter(Boolean).join(", "),
+        [cepDigits, cidade, uf, "Brasil"].filter(Boolean).join(", "),
+        [cepDigits, "Brasil"].filter(Boolean).join(", ")
+      ].filter(Boolean);
+      for (const text of candidates) {
+        const result = await geocodeAddress(text);
+        if (result) return result;
+      }
+      return null;
+    }
+
+    function renderFeatureTags(){
+      q("feature-tags").innerHTML = FEATURES.map((label) => `
+        <label class="tag">
+          <input type="checkbox" value="${label}">
+          <span>${label}</span>
+        </label>
+      `).join("");
+      q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => {
+        el.addEventListener("change", () => {
+          if (el.checked) selectedFeatures.add(el.value);
+          else selectedFeatures.delete(el.value);
+        });
+      });
+    }
+
+    function extractFeaturesFromDescription(desc){
+      const text = String(desc || "");
+      const m = text.match(/Características:\s*(.+)$/im);
+      if (!m) return { clean: text.trim(), features: [] };
+      const line = m[1] || "";
+      const parsed = line.split(",").map((x) => x.trim()).filter(Boolean);
+      const clean = text.replace(/\n?\s*Características:\s*.+$/im, "").trim();
+      return { clean, features: uniqueFeatures(parsed) };
+    }
+
+    function buildDescriptionWithFeatures(baseText){
+      const clean = String(baseText || "").trim();
+      const features = uniqueFeatures([...selectedFeatures]);
+      if (!features.length) return clean;
+      const suffix = `Características: ${features.join(", ")}`;
+      return clean ? `${clean}\n\n${suffix}` : suffix;
+    }
+
+    function getBadgeValue(){
+      const selectVal = q("p-badge-select").value;
+      if (selectVal === "__CUSTOM__") return q("p-badge-custom").value.trim() || "⭐ DESTAQUE";
+      return selectVal;
+    }
+
+    function getLocationValue(){
+      const selected = q("p-location-select").value;
+      if (selected === "__CUSTOM__") return q("p-location").value.trim();
+      return selected.trim();
+    }
+
+    function syncCodeSuggestion(){
+      if (q("p-id").value) return;
+      const base = `${q("p-type").value || ""}-${q("p-title").value || ""}-${getLocationValue() || ""}`;
+      const slug = slugify(base);
+      q("p-code").value = (slug || "imovel").slice(0, 50);
+    }
+
+    function handleBadgeMode(){
+      const isCustom = q("p-badge-select").value === "__CUSTOM__";
+      q("p-badge-custom").classList.toggle("hidden", !isCustom);
+    }
+
+    function handleLocationMode(){
+      const selected = q("p-location-select").value;
+      const isCustom = selected === "__CUSTOM__";
+      q("p-location").classList.toggle("hidden", !isCustom);
+      if (!isCustom && selected) {
+        q("p-location").value = selected;
+        if (!q("p-cep").value.trim() && CEP_HINTS[selected]) q("p-cep").value = CEP_HINTS[selected];
+      }
+      syncCodeSuggestion();
+    }
+
+    function applyBairroFromCep(bairro){
+      const clean = String(bairro || "").trim();
+      if (!clean) return;
+      const select = q("p-location-select");
+      const options = Array.from(select.options || []);
+      const match = options.find((opt) => normalizeText(opt.value) === normalizeText(clean));
+      if (match) {
+        select.value = match.value;
+        handleLocationMode();
+        return;
+      }
+      select.value = "__CUSTOM__";
+      handleLocationMode();
+      q("p-location").value = clean;
+    }
+
+    async function lookupCepDetails() {
+      const cep = normalizeCep(q("p-cep").value);
+      q("p-cep").value = cep;
+      const info = q("cep-address");
+      if (!info) return;
+
+      if (cep.length !== 9) {
+        info.textContent = "";
+        return;
+      }
+      if (cep === lastCepLookup) return;
+      lastCepLookup = cep;
+      const seq = ++cepLookupSeq;
+      info.textContent = "Buscando endereco...";
+
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep.replace("-", "")}/json/`, { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok || data?.erro) throw new Error("CEP nao encontrado");
+        if (seq !== cepLookupSeq) return;
+
+        const rua = String(data.logradouro || "").trim();
+        const bairro = String(data.bairro || "").trim();
+        const cidade = String(data.localidade || "").trim();
+        const uf = String(data.uf || "").trim();
+
+        const trechoRua = rua || "Rua nao informada";
+        const trechoBairro = bairro || "Bairro nao informado";
+        const trechoCidade = cidade ? `${cidade}/${uf}` : "";
+        info.textContent = [trechoRua, trechoBairro, trechoCidade].filter(Boolean).join(" - ");
+
+        if (bairro) applyBairroFromCep(bairro);
+
+        const coords = await geocodeByCep(cep.replace("-", ""), cidade, uf, bairro, rua)
+          || await geocodeAddress([rua, bairro, cidade, uf, "Brasil"].filter(Boolean).join(", "));
+        if (seq !== cepLookupSeq) return;
+        if (coords) {
+          q("p-latitude").value = String(coords.lat.toFixed(7));
+          q("p-longitude").value = String(coords.lng.toFixed(7));
+          updateCepMap(coords.lat, coords.lng, [trechoRua, trechoBairro, trechoCidade].filter(Boolean).join(" - "));
+          if (!coords.precise) {
+            info.textContent = `${[trechoRua, trechoBairro, trechoCidade].filter(Boolean).join(" - ")} (ponto aproximado; clique no mapa para calibrar)`;
+          }
+        } else {
+          info.textContent = `${[trechoRua, trechoBairro, trechoCidade].filter(Boolean).join(" - ")} (coordenada nao encontrada automaticamente)`;
+        }
+      } catch (_) {
+        info.textContent = "Nao foi possivel localizar esse CEP agora.";
+      }
+    }
+
+    function renderPhotoPreview(files = []){
+      tempPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+      tempPreviewUrls = [];
+
+      const existing = (currentImages || []).map((src, idx) => ({ src, cap: idx === 0 ? "Capa atual" : "Foto atual" }));
+      const local = files.map((f, idx) => {
+        const url = URL.createObjectURL(f);
+        tempPreviewUrls.push(url);
+        return { src: url, cap: idx === 0 && !existing.length ? "Nova capa" : "Nova foto" };
+      });
+      const all = [...existing, ...local];
+      q("p-photo-preview").innerHTML = all.map((img) => `
+        <div class="photo"><img src="${img.src}" alt="Preview"><span class="cap">${img.cap}</span></div>
+      `).join("");
+    }
+
+    async function login() {
+      setLoginMsg("");
+      const data = await api("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email: q("login-email").value.trim(), password: q("login-password").value })
+      });
+      if (!data.ok) return setLoginMsg(data.message || "Falha no login");
+      token = data.token;
+      localStorage.setItem("admin_token", token);
+      q("login-card").classList.add("hidden");
+      q("panel").classList.remove("hidden");
+      await loadAll();
+    }
+
+    function clearForm() {
+      q("p-id").value = "";
+      q("p-code").value = "";
+      q("p-title").value = "";
+      q("p-type").value = "Apartamento";
+      q("p-badge-select").value = "⭐ DESTAQUE";
+      q("p-badge-custom").value = "";
+      q("p-location-select").value = "";
+      q("p-location").value = "";
+      q("p-location").classList.add("hidden");
+      q("p-cep").value = "";
+      q("cep-address").textContent = "";
+      q("p-latitude").value = "";
+      q("p-longitude").value = "";
+      if (cepMap) {
+        cepMap.setCenter({ lat: -12.9718, lng: -38.5011 });
+        cepMap.setZoom(11);
+        if (cepMarker) {
+          cepMarker.setMap(null);
+          cepMarker = null;
+        }
+      }
+      q("p-bedrooms").value = 0;
+      q("p-bathrooms").value = 0;
+      q("p-area").value = "";
+      q("p-status").value = "Pronto";
+      q("p-price").value = "";
+      q("p-description").value = "";
+      q("p-published").value = "true";
+      q("p-images").value = "";
+      currentImages = [];
+      selectedFeatures = new Set();
+      q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => { el.checked = false; });
+      handleBadgeMode();
+      renderPhotoPreview([]);
+      setFormMsg("");
+    }
+
+    async function saveProperty() {
+      setFormMsg("");
+      const id = q("p-id").value;
+      const files = Array.from(q("p-images").files || []);
+      const qualityCheck = await validateImageQuality(files);
+      if (!qualityCheck.ok) return alert(qualityCheck.message);
+      const location = getLocationValue();
+      const badge = getBadgeValue();
+      const baseCode = (q("p-code").value.trim() || slugify(`${q("p-type").value}-${q("p-title").value}-${location}`) || "imovel").slice(0, 50);
+      const code = id ? baseCode : `${baseCode}-${Date.now().toString(36).slice(-4)}`;
+      const description = buildDescriptionWithFeatures(q("p-description").value);
+
+      const payload = {
+        code,
+        title: q("p-title").value.trim(),
+        type: q("p-type").value,
+        badge,
+        location,
+        cep: normalizeCep(q("p-cep").value),
+        latitude: parseCoordinate(q("p-latitude").value),
+        longitude: parseCoordinate(q("p-longitude").value),
+        bedrooms: Number(q("p-bedrooms").value || 0),
+        bathrooms: Number(q("p-bathrooms").value || 0),
+        area: Number(q("p-area").value || 0),
+        status: q("p-status").value,
+        price: Number(q("p-price").value || 0),
+        description,
+        is_published: q("p-published").value === "true"
+      };
+
+      if (!payload.title || !payload.location || !payload.price || !payload.area || !payload.description) {
+        return alert("Preencha titulo, localizacao, area, preco e descricao.");
+      }
+      if (!payload.cep || !/^\d{5}-\d{3}$/.test(payload.cep)) {
+        return alert("Preencha o CEP no formato 00000-000.");
+      }
+      if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
+        return alert("Preencha latitude e longitude para o mapa do imóvel.");
+      }
+
+      const form = new FormData();
+      Object.entries(payload).forEach(([k, v]) => form.append(k, String(v)));
+      form.append("image_urls", JSON.stringify(currentImages));
+      files.forEach((f) => form.append("images", f));
+
+      const data = await fetch(id ? `/api/properties/${id}` : "/api/properties", {
+        method: id ? "PUT" : "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form
+      }).then((r) => r.json());
+
+      if (!data.ok) return alert(data.message || "Erro ao salvar");
+      clearForm();
+      setFormMsg("Imovel salvo com sucesso.");
+      await loadProperties();
+    }
+
+    async function loadProperties() {
+      const data = await api("/api/properties");
+      if (!data.ok) return;
+      q("list-count").textContent = `${data.items.length} itens`;
+      q("list").innerHTML = data.items.map((i) => `
+        <div class="item">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+            <strong>${i.title}</strong>
+            <span class="status ${i.is_published ? "on" : "off"}">${i.is_published ? "Publicado" : "Oculto"}</span>
+          </div>
+          ${i.location} - ${Number(i.price).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}<br>
+          <small>${i.code} - ${i.type}</small>
+          <div class="hint">Lat ${i.latitude ?? "--"} | Lng ${i.longitude ?? "--"}</div>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn alt" type="button" onclick="editItem('${i.id}')">Editar</button>
+            <button class="btn danger" type="button" onclick="deleteItem('${i.id}')">Excluir</button>
+          </div>
+        </div>
+      `).join("");
+      window._items = data.items;
+    }
+
+    function editItem(id) {
+      const i = (window._items || []).find((x) => x.id === id);
+      if (!i) return;
+      const parsed = extractFeaturesFromDescription(i.description || "");
+      selectedFeatures = new Set(parsed.features);
+
+      q("p-id").value = i.id;
+      q("p-code").value = i.code || "";
+      q("p-title").value = i.title || "";
+      q("p-type").value = i.type || "Apartamento";
+
+      const badgeOptions = Array.from(q("p-badge-select").options).map((o) => o.value);
+      if (badgeOptions.includes(i.badge || "")) {
+        q("p-badge-select").value = i.badge;
+        q("p-badge-custom").value = "";
+      } else {
+        q("p-badge-select").value = "__CUSTOM__";
+        q("p-badge-custom").value = i.badge || "";
+      }
+      handleBadgeMode();
+
+      const locationOptions = Array.from(q("p-location-select").options).map((o) => o.value);
+      if (locationOptions.includes(i.location || "")) {
+        q("p-location-select").value = i.location;
+        q("p-location").value = i.location || "";
+      } else {
+        q("p-location-select").value = "__CUSTOM__";
+        q("p-location").value = i.location || "";
+      }
+      handleLocationMode();
+
+      q("p-cep").value = i.cep || "";
+      q("cep-address").textContent = "";
+      if (q("p-cep").value) lookupCepDetails();
+      q("p-latitude").value = i.latitude ?? "";
+      q("p-longitude").value = i.longitude ?? "";
+      if (Number.isFinite(Number(i.latitude)) && Number.isFinite(Number(i.longitude))) {
+        updateCepMap(Number(i.latitude), Number(i.longitude), i.location || "Localizacao do imovel");
+      }
+      q("p-bedrooms").value = i.bedrooms || 0;
+      q("p-bathrooms").value = i.bathrooms || 0;
+      q("p-area").value = i.area || 0;
+      q("p-status").value = i.status || "Pronto";
+      q("p-price").value = i.price || 0;
+      q("p-description").value = parsed.clean || "";
+      q("p-published").value = String(!!i.is_published);
+      currentImages = (i.images || []).map((x) => x.url);
+
+      q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => {
+        el.checked = selectedFeatures.has(el.value);
+      });
+
+      renderPhotoPreview(Array.from(q("p-images").files || []));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Excluir imovel?")) return;
+      const data = await api(`/api/properties/${id}`, { method: "DELETE" });
+      if (!data.ok) return alert("Erro ao excluir");
+      await loadProperties();
+    }
+
+    async function loadLeads() {
+      const data = await api("/api/admin/leads");
+      if (!data.ok) return;
+      q("leads").innerHTML = data.items.slice(0, 30).map((l) => `
+        <div class="item">
+          <strong>${l.name}</strong><br>
+          ${l.phone}${l.email ? ` - ${l.email}` : ""}<br>
+          <small>${l.message}</small>
+        </div>
+      `).join("");
+    }
+
+    async function exportBackup() {
+      const data = await api("/api/admin/backup/export");
+      if (!data.ok) return alert("Erro ao exportar");
+      alert(`Backup criado: ${data.file}`);
+    }
+
+    async function loadAll() {
+      await loadProperties();
+      await loadLeads();
+    }
+
+    q("login-btn").addEventListener("click", login);
+    q("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+    q("save-btn").addEventListener("click", saveProperty);
+    q("clear-btn").addEventListener("click", clearForm);
+    q("export-btn").addEventListener("click", exportBackup);
+    q("p-badge-select").addEventListener("change", handleBadgeMode);
+    q("p-location-select").addEventListener("change", handleLocationMode);
+    q("p-title").addEventListener("input", syncCodeSuggestion);
+    q("p-type").addEventListener("change", () => {
+      if (q("p-type").value === "Lançamento") q("p-status").value = "Lançamento";
+      syncCodeSuggestion();
+    });
+    q("p-cep").addEventListener("input", () => {
+      q("p-cep").value = normalizeCep(q("p-cep").value);
+      if (cepLookupTimer) clearTimeout(cepLookupTimer);
+      cepLookupTimer = setTimeout(lookupCepDetails, 350);
+    });
+    q("p-cep").addEventListener("blur", lookupCepDetails);
+    q("p-latitude").addEventListener("change", () => {
+      const lat = parseCoordinate(q("p-latitude").value);
+      const lng = parseCoordinate(q("p-longitude").value);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) updateCepMap(lat, lng, getLocationValue() || "Localizacao do imovel");
+    });
+    q("p-longitude").addEventListener("change", () => {
+      const lat = parseCoordinate(q("p-latitude").value);
+      const lng = parseCoordinate(q("p-longitude").value);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) updateCepMap(lat, lng, getLocationValue() || "Localizacao do imovel");
+    });
+    q("map-open-btn").addEventListener("click", () => {
+      const loc = getLocationValue() || "Salvador, Bahia";
+      window.open(`https://www.google.com/maps/search/${encodeURIComponent(loc)}`, "_blank", "noopener");
+    });
+    q("p-images").addEventListener("change", async () => {
+      const files = Array.from(q("p-images").files || []);
+      const qualityCheck = await validateImageQuality(files);
+      if (!qualityCheck.ok) {
+        alert(qualityCheck.message);
+        q("p-images").value = "";
+        renderPhotoPreview([]);
+        return;
+      }
+      renderPhotoPreview(files);
+    });
+
+    renderFeatureTags();
+    initCepMap();
+    clearForm();
+
+    if (token) {
+      q("login-card").classList.add("hidden");
+      q("panel").classList.remove("hidden");
+      loadAll();
+    }
+  </script>
+</body>
+</html>

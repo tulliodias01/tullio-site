@@ -1,6 +1,7 @@
 const express = require("express");
 const { query } = require("../db");
 const config = require("../config");
+const { sanitizePublicDescription } = require("../utils/sanitizePublicDescription");
 
 const router = express.Router();
 
@@ -24,17 +25,22 @@ router.get("/properties", async (req, res) => {
     });
   }
 
-  const items = rows.rows.map((item) => ({ ...item, images: imagesMap.get(item.id) || [] }));
+  const items = rows.rows.map((item) => ({
+    ...item,
+    description: sanitizePublicDescription(item.description),
+    images: imagesMap.get(item.id) || []
+  }));
   return res.json({ ok: true, items });
 });
 
 router.get("/properties/:slug", async (req, res) => {
   const row = await query(
-    "select * from properties where slug = $1 and is_published = true limit 1",
+    "select id, code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, created_at, updated_at from properties where slug = $1 and is_published = true limit 1",
     [req.params.slug]
   );
   if (!row.rows.length) return res.status(404).json({ ok: false, message: "Imóvel não encontrado." });
   const property = row.rows[0];
+  property.description = sanitizePublicDescription(property.description);
   const imgs = await query(
     "select image_url, is_cover, sort_order from property_images where property_id = $1 order by sort_order asc",
     [property.id]
@@ -46,8 +52,7 @@ router.get("/properties/:slug", async (req, res) => {
 router.get("/sitemap.xml", async (_req, res) => {
   const rows = await query("select slug, updated_at from properties where is_published = true");
   const urls = [
-    `${config.siteUrl}/`,
-    `${config.siteUrl}/admin`
+    `${config.siteUrl}/`
   ];
   rows.rows.forEach((r) => urls.push(`${config.siteUrl}/imoveis/${r.slug}`));
 

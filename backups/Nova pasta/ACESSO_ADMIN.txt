@@ -1,0 +1,5 @@
+ADMIN_EMAIL=tulliodias.corretor@gmail.com
+ADMIN_PASSWORD=Atlas#123
+
+ADMIN_PANEL_USER=tullioadmin
+ADMIN_PANEL_PASSWORD=Painel#X9s2Lk7mQ1

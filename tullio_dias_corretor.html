@@ -130,7 +130,7 @@
             height: 128px;
             border-radius: 12px;
             box-shadow: 0 10px 22px rgba(30, 58, 95, 0.24);
-            object-fit: contain;
+            object-fit: cover;
             background: #ffffff;
             border: 2px solid var(--secondary);
             image-rendering: auto;
@@ -246,9 +246,7 @@
 
 
         .hero.hero-has-image {
-            background-image:
-                linear-gradient(135deg, rgba(30, 58, 95, 0.8) 0%, rgba(30, 58, 95, 0.9) 100%),
-                url('/public/hero-slides/hero-new-02.png?v=2');
+            background-image: linear-gradient(135deg, rgba(30, 58, 95, 0.8) 0%, rgba(30, 58, 95, 0.9) 100%);
         }
 
         .hero::before {
@@ -866,6 +864,7 @@
             gap: 2.5rem;
         }
 
+
         .property-card {
             background: var(--white);
             border-radius: 10px;
@@ -1104,6 +1103,91 @@
         .property-modal.open {
             display: block;
         }
+        .image-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 1300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 17, 30, 0.72);
+            backdrop-filter: blur(3px);
+        }
+        .image-lightbox.open {
+            display: flex;
+        }
+        .image-lightbox-backdrop {
+            position: absolute;
+            inset: 0;
+            background: transparent;
+        }
+        .image-lightbox-frame {
+            position: relative;
+            width: min(96vw, 1400px);
+            height: min(92vh, 980px);
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 0.5rem;
+            z-index: 1;
+        }
+        .image-lightbox-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ecf4fb;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+        }
+        .image-lightbox-close {
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            background: rgba(9, 22, 36, 0.55);
+            color: #ffffff;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .image-lightbox-stage {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(8, 18, 30, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-lightbox-stage img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .image-lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.68);
+            background: rgba(12, 26, 42, 0.72);
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 1.35rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-lightbox-prev { left: 0.75rem; }
+        .image-lightbox-next { right: 0.75rem; }
+        .zoomable-photo {
+            cursor: zoom-in;
+        }
 
         .property-modal-backdrop {
             position: absolute;
@@ -1308,6 +1392,11 @@
 
         .property-modal-desc p:last-child {
             margin-bottom: 0;
+        }
+
+        .property-modal-desc ul {
+            margin: 0 0 0.75rem 1.1rem;
+            padding: 0;
         }
 
         .property-modal-sticky {
@@ -1708,6 +1797,11 @@
             margin-bottom: 0;
         }
 
+        .property-page-description ul {
+            margin: 0 0 0.8rem 1.15rem;
+            padding: 0;
+        }
+
 
         .property-page-description.is-collapsed {
             max-height: 210px;
@@ -1957,7 +2051,7 @@
         .footer-logo {
             width: 88px;
             height: 59px;
-            object-fit: contain;
+            object-fit: cover;
             background: transparent;
             border: none;
             border-radius: 6px;
@@ -2319,13 +2413,11 @@
             min-height: 100vh;
             padding: 8rem 2rem 5rem;
             text-align: left;
-            background:
-                linear-gradient(105deg, rgba(10,10,15,0.97), rgba(10,10,15,0.40)),
-                url('/public/hero-slides/hero-new-02.png?v=2') center/cover no-repeat;
+            background: linear-gradient(105deg, rgba(10,10,15,0.97), rgba(10,10,15,0.40));
             animation: heroZoom 28s infinite alternate ease-in-out;
         }
 
-        .hero.hero-has-image { background-image: linear-gradient(105deg, rgba(10,10,15,0.97), rgba(10,10,15,0.40)), url('/public/hero-slides/hero-new-02.png?v=2'); }
+        .hero.hero-has-image { background-size: cover; background-position: center; background-repeat: no-repeat; }
         .hero-content { max-width: 980px; margin: 0; }
 
         .hero-vertical-line {
@@ -2943,6 +3035,7 @@
                 <select id="objetivo">
                     <option value="Todos">Todos</option>
                     <option value="Compra">Compra</option>
+                    <option value="Aluguel">Aluguel</option>
                     <option value="Venda">Venda</option>
                 </select>
             </div>
@@ -3071,6 +3164,20 @@
                 <a id="modal-cta-whatsapp" class="modal-cta modal-cta-whatsapp" target="_blank">Agendar visita no WhatsApp</a>
                 <a href="tel:+5571992697769" class="modal-cta modal-cta-call">Ligar agora</a>
                 <a href="#" id="modal-cta-share" class="modal-cta modal-cta-share" onclick="shareCurrentModalProperty(event)">Compartilhar</a>
+            </div>
+        </div>
+    </div>
+    <div class="image-lightbox" id="image-lightbox" aria-hidden="true">
+        <div class="image-lightbox-backdrop" onclick="closeImageLightbox()"></div>
+        <div class="image-lightbox-frame" role="dialog" aria-modal="true" aria-label="Visualizador de foto">
+            <div class="image-lightbox-head">
+                <span id="image-lightbox-counter">Foto 1 de 1</span>
+                <button type="button" class="image-lightbox-close" id="image-lightbox-close" aria-label="Voltar">×</button>
+            </div>
+            <div class="image-lightbox-stage">
+                <img id="image-lightbox-img" src="" alt="Foto ampliada do imóvel" loading="eager" decoding="sync">
+                <button type="button" class="image-lightbox-nav image-lightbox-prev" id="image-lightbox-prev" aria-label="Foto anterior">‹</button>
+                <button type="button" class="image-lightbox-nav image-lightbox-next" id="image-lightbox-next" aria-label="Próxima foto">›</button>
             </div>
         </div>
     </div>
@@ -3204,11 +3311,15 @@
         let currentModalImageIndex = 0;
         let currentPageProperty = null;
         let currentPageImageIndex = 0;
+        let lightboxImages = [];
+        let lightboxIndex = 0;
+        let lightboxPrevOverflow = "";
         let lazyImageObserver = null;
         let tdMap = null;
         let tdMapMarker = null;
         let tdMapInfoWindow = null;
         let tdMapReady = false;
+        let heroSlideTimer = null;
         let googleMapsLoaderPromise = null;
         const SITE_NAME = "Tullio Dias Imóveis";
         const DEFAULT_TITLE = "Tullio Dias - Corretor de Imóveis | CRECI-BA 37.181";
@@ -3444,7 +3555,6 @@
                 .replaceAll('"', "&quot;")
                 .replaceAll("'", "&#39;");
         }
-
         function formatCurrency(value) {
             return Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 });
         }
@@ -3462,6 +3572,16 @@
             return `R$ ${num.toLocaleString("pt-BR")}`;
         }
 
+        function normalizeText(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
         function normalizePriceInput(inputEl) {
             if (!inputEl) return;
             const raw = parsePriceInputValue(inputEl.value);
@@ -3470,11 +3590,22 @@
 
         function buildPropertySummary(description, maxChars = 180) {
             const raw = String(description || "");
-            const clean = raw.replace(/\s+/g, " ").trim();
-            const withoutFeatures = clean.replace(/Caracter[ií]sticas:\s*.*/i, "").trim();
+            const clean = raw
+                .replace(/\*\*(.*?)\*\*/g, "$1")
+                .replace(/\*(.*?)\*/g, "$1")
+                .replace(/^\s*-\s+/gm, "")
+                .replace(/\s+/g, " ")
+                .trim();
+            const withoutFeatures = clean.replace(/Caracter[ií]sticas:\s*[\s\S]*$/i, "").trim();
             const text = withoutFeatures || clean;
             if (text.length <= maxChars) return text;
             return `${text.slice(0, maxChars).replace(/\s+\S*$/, "").trim()}...`;
+        }
+
+        function formatInlineDescriptionText(text) {
+            const escaped = escapeHtml(String(text || ""));
+            const boldParsed = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+            return boldParsed.replace(/(^|[\s(>])\*([^*\n]+?)\*/g, "$1<em>$2</em>");
         }
 
         function formatDescriptionHtml(description, fallbackText) {
@@ -3485,12 +3616,36 @@
                 .replace(/\r\n/g, "\n")
                 .replace(/\n{3,}/g, "\n\n")
                 .trim();
-            const paragraphs = normalized
-                .split(/\n{2,}/)
-                .map((part) => part.replace(/\n+/g, " ").replace(/\s+/g, " ").trim())
-                .filter(Boolean)
-                .map((part) => `<p>${escapeHtml(part)}</p>`);
-            return paragraphs.join("");
+            const blocks = normalized.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+
+            const htmlBlocks = blocks.map((block) => {
+                const lines = block.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+                if (!lines.length) return "";
+
+                const hasFeatureTitle = /^Caracter[ií]sticas:\s*$/i.test(lines[0]);
+                const followingBullets = lines.slice(1).filter(Boolean);
+                if (hasFeatureTitle && followingBullets.length && followingBullets.every((line) => /^[-*]\s+/.test(line))) {
+                    const items = followingBullets
+                        .map((line) => line.replace(/^[-*]\s+/, ""))
+                        .map((line) => `<li>${formatInlineDescriptionText(line)}</li>`)
+                        .join("");
+                    return `<p><strong>Características:</strong></p><ul>${items}</ul>`;
+                }
+
+                const isList = lines.every((line) => /^[-*]\s+/.test(line));
+                if (isList) {
+                    const items = lines
+                        .map((line) => line.replace(/^[-*]\s+/, ""))
+                        .map((line) => `<li>${formatInlineDescriptionText(line)}</li>`)
+                        .join("");
+                    return `<ul>${items}</ul>`;
+                }
+
+                const paragraph = lines.join(" ").replace(/\s+/g, " ").trim();
+                return `<p>${formatInlineDescriptionText(paragraph)}</p>`;
+            }).filter(Boolean);
+
+            return htmlBlocks.join("");
         }
 
         function renderChipLabel(label) {
@@ -3549,6 +3704,7 @@
         function saveProperties() {
             properties = standardizePropertyCodes(properties);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+            initHeroSlideshow(getHeroSlidesFromProperties(12));
         }
 
         function getCardImage(property) {
@@ -3777,9 +3933,10 @@
             if (!main || !thumbs || !title || !location || !price || !chips || !description || !ctaWhatsApp || !shareWhatsapp) return;
 
             if (hasImages) {
+                const activeImage = images[currentPageImageIndex];
                 const canNavigate = images.length > 1;
                 main.innerHTML = `
-                    <img src="${escapeHtml(images[currentPageImageIndex])}" alt="Foto de ${escapeHtml(property.title)}" width="1600" height="1000" loading="lazy" decoding="async">
+                    <img src="${escapeHtml(activeImage)}" alt="Foto de ${escapeHtml(property.title)}" class="zoomable-photo" onclick="openImageLightbox('page')" width="1600" height="1000" loading="lazy" decoding="async">
                     ${canNavigate ? '<button class="page-gallery-nav page-gallery-prev" type="button" onclick="showPrevPageImage()" aria-label="Foto anterior">‹</button>' : ""}
                     ${canNavigate ? '<button class="page-gallery-nav page-gallery-next" type="button" onclick="showNextPageImage()" aria-label="Próxima foto">›</button>' : ""}
                 `;
@@ -3918,6 +4075,68 @@
             document.body.style.overflow = "";
         }
 
+        function renderImageLightbox() {
+            const overlay = document.getElementById("image-lightbox");
+            const img = document.getElementById("image-lightbox-img");
+            const counter = document.getElementById("image-lightbox-counter");
+            const prev = document.getElementById("image-lightbox-prev");
+            const next = document.getElementById("image-lightbox-next");
+            if (!overlay || !img || !counter || !prev || !next) return;
+
+            const total = lightboxImages.length;
+            const safeIndex = Math.max(0, Math.min(lightboxIndex, Math.max(0, total - 1)));
+            lightboxIndex = safeIndex;
+
+            img.src = total ? String(lightboxImages[safeIndex] || "") : "";
+            counter.textContent = `Foto ${total ? safeIndex + 1 : 0} de ${total}`;
+
+            const hasNav = total > 1;
+            prev.hidden = !hasNav;
+            next.hidden = !hasNav;
+        }
+
+        function openImageLightbox(source = "page") {
+            const overlay = document.getElementById("image-lightbox");
+            if (!overlay) return;
+
+            const fromPage = source === "page";
+            const property = fromPage ? currentPageProperty : currentModalProperty;
+            if (!property) return;
+
+            const images = getPropertyImages(property);
+            if (!images.length) return;
+
+            lightboxImages = images;
+            lightboxIndex = fromPage ? currentPageImageIndex : currentModalImageIndex;
+            renderImageLightbox();
+
+            lightboxPrevOverflow = document.body.style.overflow || "";
+            document.body.style.overflow = "hidden";
+            overlay.classList.add("open");
+            overlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeImageLightbox() {
+            const overlay = document.getElementById("image-lightbox");
+            if (!overlay) return;
+
+            overlay.classList.remove("open");
+            overlay.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = lightboxPrevOverflow;
+        }
+
+        function showPrevImageLightbox() {
+            if (!lightboxImages.length) return;
+            lightboxIndex = (lightboxIndex - 1 + lightboxImages.length) % lightboxImages.length;
+            renderImageLightbox();
+        }
+
+        function showNextImageLightbox() {
+            if (!lightboxImages.length) return;
+            lightboxIndex = (lightboxIndex + 1) % lightboxImages.length;
+            renderImageLightbox();
+        }
+
         function showPrevModalImage() {
             if (!currentModalProperty) return;
             const images = getPropertyImages(currentModalProperty);
@@ -3965,7 +4184,7 @@
                 const activeImage = images[currentModalImageIndex];
                 const canNavigate = images.length > 1;
                 main.innerHTML = `
-                    <img src="${escapeHtml(activeImage)}" alt="Foto de ${escapeHtml(property.title)}" width="1600" height="1000" loading="lazy" decoding="async">
+                    <img src="${escapeHtml(activeImage)}" alt="Foto de ${escapeHtml(property.title)}" class="zoomable-photo" onclick="openImageLightbox('modal')" width="1600" height="1000" loading="lazy" decoding="async">
                     ${canNavigate ? '<button class="modal-gallery-nav modal-gallery-prev" type="button" onclick="showPrevModalImage()" aria-label="Foto anterior">‹</button>' : ""}
                     ${canNavigate ? '<button class="modal-gallery-nav modal-gallery-next" type="button" onclick="showNextModalImage()" aria-label="Próxima foto">›</button>' : ""}
                 `;
@@ -4004,16 +4223,26 @@
             modalShare.href = buildPropertyLink(property);
         }
 
-        function renderProperties(list = properties) {
+        function getHomeFeaturedProperties(limit = 3) {
+            const featured = properties.filter((property) => {
+                const badge = normalizeText(property?.badge || "");
+                return badge.includes("destaque");
+            });
+            const source = featured.length ? featured : properties;
+            return source.slice(0, limit);
+        }
+
+        function renderProperties(list = null) {
             const container = document.getElementById("properties-list");
             if (!container) return;
+            const items = Array.isArray(list) ? list : getHomeFeaturedProperties(3);
 
-            if (!list.length) {
+            if (!items.length) {
                 container.innerHTML = '<div class="admin-card"><h3>Nenhum imóvel encontrado</h3><p>Ajuste os filtros de busca para visualizar mais opções.</p></div>';
                 return;
             }
 
-            container.innerHTML = list.map((property) => {
+            container.innerHTML = items.map((property) => {
                 const image = getCardImage(property);
                 const msgVisit = `Olá Tullio! Gostaria de agendar uma visita para: ${property.title}`;
                 const visitLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgVisit)}`;
@@ -4288,6 +4517,15 @@
             const precoMax = parsePriceInputValue(document.getElementById("preco").value);
             const quartos = document.getElementById("quartos").value;
             const objetivo = document.getElementById("objetivo")?.value || "Todos";
+            const RENT_MAX_PRICE = 30000;
+
+            const classifyObjective = (property) => {
+                const text = normalizeText(property?.status || "");
+                const isSold = text.includes("vendido");
+                const isRental = Number(property?.price || 0) > 0 && Number(property?.price || 0) <= RENT_MAX_PRICE;
+
+                return { isSold, isRental };
+            };
 
             return properties.filter((property) => {
                 const matchTipo = tipo === "Todos" || property.type === tipo;
@@ -4296,14 +4534,29 @@
                 const matchQuartos = quartos === "Qualquer"
                     || (quartos === "4+" && Number(property.bedrooms) >= 4)
                     || (quartos !== "4+" && quartos !== "Qualquer" && Number(property.bedrooms) >= Number(quartos));
-                const status = String(property.status || "").toLowerCase();
-                const isSold = status === "vendido";
+                const { isSold, isRental } = classifyObjective(property);
                 const matchObjetivo = objetivo === "Todos"
-                    || (objetivo === "Compra" && !isSold)
+                    ? !isSold
+                    : (objetivo === "Compra" && !isRental && !isSold)
+                    || (objetivo === "Aluguel" && isRental && !isSold)
                     || (objetivo === "Venda" && isSold);
 
                 return matchTipo && matchLocal && matchPrecoMax && matchQuartos && matchObjetivo;
             });
+        }
+
+        function hasActiveSearchFilters() {
+            const tipo = document.getElementById("tipo")?.value || "Todos";
+            const objetivo = document.getElementById("objetivo")?.value || "Todos";
+            const localizacao = (document.getElementById("localizacao")?.value || "").trim();
+            const preco = parsePriceInputValue(document.getElementById("preco")?.value || "");
+            const quartos = document.getElementById("quartos")?.value || "Qualquer";
+
+            return tipo !== "Todos"
+                || objetivo !== "Todos"
+                || !!localizacao
+                || !!preco
+                || quartos !== "Qualquer";
         }
 
         function handleSearch(e) {
@@ -4325,41 +4578,50 @@
             window.open(whatsappUrl, "_blank");
         }
 
-        const HERO_SLIDES = [
-            "/public/hero-slides/hero-new-02.png?v=2",
-            "/public/hero-slides/hero-new-01.png?v=2",
-            "/public/hero-slides/hero-new-03.jpg?v=2"
-        ];
-
         function applyHeroBackground(hero, imageUrl) {
             if (!hero || !imageUrl) return;
             hero.style.backgroundImage = `linear-gradient(105deg, rgba(10,10,15,0.97), rgba(10,10,15,0.40)), url('${imageUrl}')`;
         }
 
-        function initHeroSlideshow() {
+        function getHeroSlidesFromProperties(limit = 10) {
+            const slides = [
+                "/public/home-slide-01.jpg",
+                "/public/home-slide-02.png"
+            ];
+            return slides.slice(0, limit);
+        }
+
+        function initHeroSlideshow(slides = []) {
             const hero = document.querySelector(".hero");
-            if (!hero || !HERO_SLIDES.length) return;
+            if (!hero) return;
 
+            if (heroSlideTimer) {
+                clearInterval(heroSlideTimer);
+                heroSlideTimer = null;
+            }
+
+            if (!slides.length) {
+                hero.classList.remove("hero-has-image");
+                hero.style.backgroundImage = "linear-gradient(105deg, rgba(10,10,15,0.97), rgba(10,10,15,0.40))";
+                return;
+            }
+
+            hero.classList.add("hero-has-image");
             let index = 0;
-            applyHeroBackground(hero, HERO_SLIDES[index]);
+            applyHeroBackground(hero, slides[index]);
 
-            if (HERO_SLIDES.length < 2) return;
+            if (slides.length < 2) return;
             setTimeout(() => {
-                setInterval(() => {
-                    index = (index + 1) % HERO_SLIDES.length;
-                    applyHeroBackground(hero, HERO_SLIDES[index]);
+                heroSlideTimer = setInterval(() => {
+                    index = (index + 1) % slides.length;
+                    applyHeroBackground(hero, slides[index]);
                 }, 7000);
             }, 4000);
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
-            const hero = document.querySelector(".hero");
-            if (hero && window.matchMedia("(min-width: 769px)").matches) {
-                hero.classList.add("hero-has-image");
-            }
-            initHeroSlideshow();
-
             await loadProperties();
+            initHeroSlideshow(getHeroSlidesFromProperties(12));
             renderAdminList();
             syncViewWithRoute();
 
@@ -4376,6 +4638,10 @@
             const adminBathrooms = document.getElementById("admin-bathrooms");
             const adminBadge = document.getElementById("admin-badge");
             const maxPriceInput = document.getElementById("preco");
+            const imageLightbox = document.getElementById("image-lightbox");
+            const imageLightboxClose = document.getElementById("image-lightbox-close");
+            const imageLightboxPrev = document.getElementById("image-lightbox-prev");
+            const imageLightboxNext = document.getElementById("image-lightbox-next");
 
             if (adminForm) adminForm.addEventListener("submit", saveProperty);
             if (adminCancel) adminCancel.addEventListener("click", resetAdminForm);
@@ -4387,6 +4653,9 @@
             if (adminBedrooms) adminBedrooms.addEventListener("change", () => toggleCustomCountField("admin-bedrooms", "admin-bedrooms-custom"));
             if (adminBathrooms) adminBathrooms.addEventListener("change", () => toggleCustomCountField("admin-bathrooms", "admin-bathrooms-custom"));
             if (adminBadge) adminBadge.addEventListener("change", toggleCustomBadgeField);
+            if (imageLightboxClose) imageLightboxClose.addEventListener("click", closeImageLightbox);
+            if (imageLightboxPrev) imageLightboxPrev.addEventListener("click", showPrevImageLightbox);
+            if (imageLightboxNext) imageLightboxNext.addEventListener("click", showNextImageLightbox);
             if (maxPriceInput) {
                 maxPriceInput.addEventListener("input", () => {
                     const cursorAtEnd = maxPriceInput.selectionStart === maxPriceInput.value.length;
@@ -4421,6 +4690,22 @@
             });
 
             document.addEventListener("keydown", (event) => {
+                const lightboxOpen = imageLightbox?.classList.contains("open");
+                if (lightboxOpen) {
+                    if (event.key === "Escape") {
+                        closeImageLightbox();
+                        return;
+                    }
+                    if (event.key === "ArrowLeft") {
+                        showPrevImageLightbox();
+                        return;
+                    }
+                    if (event.key === "ArrowRight") {
+                        showNextImageLightbox();
+                        return;
+                    }
+                }
+
                 const modal = document.getElementById("property-modal");
                 const isOpen = modal?.classList.contains("open");
                 if (!isOpen) return;

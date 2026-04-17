@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -44,14 +44,66 @@
     .btn.warn{background:linear-gradient(180deg,#ffd76d 0%,#d4af37 65%,#b99228 100%);color:#2c2507;border-color:#b99228}
     .btn.danger{background:linear-gradient(180deg,#ef5350 0%,#d32f2f 70%,#b71c1c 100%);border-color:#a41515}
     .hidden{display:none}
+    .field-invalid{border-color:#d32f2f !important;box-shadow:0 0 0 3px rgba(211,47,47,.14) !important}
+    .field-error{font-size:.8rem;color:#b71c1c;margin-top:4px}
     .hint{font-size:.8rem;color:var(--muted);margin-top:4px}
     .helper{background:#f8fbff;border:1px dashed #bfd4e8;border-radius:10px;padding:10px;font-size:.85rem;color:#35516e}
+    .desc-tools{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}
+    .desc-tool{padding:6px 10px;font-size:.82rem}
     .toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+    .panel-nav{
+      position:sticky;top:8px;z-index:15;background:rgba(241,245,249,.92);backdrop-filter:blur(6px);
+      border:1px solid #d5e1ec;border-radius:12px;padding:8px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px
+    }
+    .panel-nav .btn{padding:8px 11px}
+    .panel-nav .btn.active{
+      background:linear-gradient(180deg,#2b4f80 0%,#1e3a5f 65%,#16304f 100%);
+      color:#fff;border-color:#16304f
+    }
+    .section-anchor{scroll-margin-top:86px}
+    .card-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .card-head h2,.card-head h3{margin:0}
+    .list-filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .list-filters.leads{grid-template-columns:2fr 1fr}
+    .muted{color:var(--muted);font-size:.82rem}
+    #panel[data-tab="cadastro"] #section-imoveis,
+    #panel[data-tab="cadastro"] #section-leads{display:none}
+    #panel[data-tab="imoveis"] #section-cadastro,
+    #panel[data-tab="imoveis"] #section-leads{display:none}
+    #panel[data-tab="leads"] #section-cadastro,
+    #panel[data-tab="leads"] #section-imoveis{display:none}
+    #panel[data-tab="cadastro"] .grid,
+    #panel[data-tab="imoveis"] .grid,
+    #panel[data-tab="leads"] .grid{grid-template-columns:1fr}
     .tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
     .tag{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d4e2ef;border-radius:10px;padding:8px}
     .tag input{width:auto;padding:0;margin:0}
+    .feature-tools{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px}
+    .feature-actions{display:flex;gap:8px}
+    .feature-groups{display:grid;gap:10px}
+    .feature-group{border:1px solid #d8e3ee;border-radius:10px;padding:10px;background:#fcfeff}
+    .feature-group h4{margin:0 0 8px;font-size:.9rem;color:#274461}
     .item{border:1px solid #dae2e9;border-radius:10px;padding:10px;margin-bottom:10px;background:#fbfdff}
     .item small{color:#5d7388}
+    .table-wrap{border:1px solid #d8e3ee;border-radius:12px;overflow:auto;background:#fff}
+    .admin-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}
+    .admin-table thead th{
+      position:sticky;top:0;background:#f6faff;border-bottom:1px solid #d8e3ee;color:#2b4661;
+      font-size:.78rem;letter-spacing:.02em;text-transform:uppercase;padding:10px 8px;text-align:left;z-index:1
+    }
+    .admin-table thead th.sortable{cursor:pointer;user-select:none}
+    .admin-table tbody td{padding:10px 8px;border-bottom:1px solid #edf2f7;vertical-align:top;font-size:.9rem;color:#1f3448}
+    .admin-table tbody tr:hover{background:#f9fcff}
+    .admin-table tbody tr.is-selected{background:#eef6ff}
+    .admin-table .td-title{font-weight:700;color:#18324f}
+    .admin-table .td-sub{display:block;font-size:.78rem;color:#5f7284;margin-top:2px}
+    .admin-table .td-price{font-weight:700;color:#1e3a5f}
+    .table-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .table-empty{padding:16px;color:#5a6c7d}
+    .batch-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+    .batch-bar .muted{margin-left:auto}
+    .pager{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px}
+    .pager .actions{gap:6px}
     .status{font-size:.78rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid}
     .status.on{background:#e8f7ef;border-color:#b8e3cb;color:#16673a}
     .status.off{background:#fff1f1;border-color:#f0c2c2;color:#9d1f1f}
@@ -61,9 +113,14 @@
     .photo .cap{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.66rem;border-radius:999px;padding:2px 6px}
     .login-msg{font-size:.9rem;color:var(--danger);min-height:1.2rem}
     .ok-msg{font-size:.85rem;color:var(--ok)}
+    .toast-wrap{position:fixed;top:18px;right:18px;z-index:9999;display:grid;gap:8px;max-width:360px}
+    .toast{padding:10px 12px;border-radius:10px;border:1px solid;background:#fff;box-shadow:0 10px 20px rgba(0,0,0,.12);font-size:.9rem}
+    .toast.success{border-color:#b8e3cb;background:#e8f7ef;color:#16673a}
+    .toast.error{border-color:#f0c2c2;background:#fff1f1;color:#9d1f1f}
+    .toast.info{border-color:#bfd4e8;background:#eef6ff;color:#244a6f}
     #cep-map-wrap{margin-top:8px}
     #cep-map{height:240px;border:1px solid #d6e0ea;border-radius:10px;background:#eef3f8}
-    @media (max-width:980px){.grid,.row,.row-2{grid-template-columns:1fr}}
+    @media (max-width:980px){.grid,.row,.row-2,.feature-tools,.list-filters{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -92,8 +149,17 @@
     </div>
 
     <div id="panel" class="hidden">
-      <div class="card">
-        <h2>Cadastro de Imovel</h2>
+      <div class="panel-nav">
+        <button class="btn alt" type="button" id="go-cadastro">Cadastro</button>
+        <button class="btn alt" type="button" id="go-imoveis">Imoveis</button>
+        <button class="btn alt" type="button" id="go-leads">Leads</button>
+      </div>
+
+      <div class="card section-anchor" id="section-cadastro">
+        <div class="card-head">
+          <h2>Cadastro de Imovel</h2>
+          <span class="pill">Fluxo rapido</span>
+        </div>
         <div class="helper">
           Fluxo otimizado: selecione tipo, bairro, etiqueta e caracteristicas. O codigo e o CEP podem ser sugeridos automaticamente.
         </div>
@@ -116,7 +182,7 @@
               <option>Casa</option>
               <option>Comercial</option>
               <option>Terreno</option>
-              <option value="Lançamento">Lançamento</option>
+              <option value="LanÃ§amento">LanÃ§amento</option>
             </select>
           </div>
         </div>
@@ -142,12 +208,12 @@
               <optgroup label="Salvador">
                 <option value="Barra">Barra</option>
                 <option value="Ondina">Ondina</option>
-                <option value="Vitória">Vitória</option>
+                <option value="VitÃ³ria">VitÃ³ria</option>
                 <option value="Pituba">Pituba</option>
                 <option value="Itaigara">Itaigara</option>
-                <option value="Caminho das Árvores">Caminho das Árvores</option>
+                <option value="Caminho das Ãrvores">Caminho das Ãrvores</option>
                 <option value="Horto Florestal">Horto Florestal</option>
-                <option value="Graça">Graça</option>
+                <option value="GraÃ§a">GraÃ§a</option>
                 <option value="Rio Vermelho">Rio Vermelho</option>
                 <option value="Patamares">Patamares</option>
                 <option value="Stella Maris">Stella Maris</option>
@@ -156,11 +222,11 @@
               </optgroup>
               <optgroup label="Lauro de Freitas">
                 <option value="Buraquinho">Buraquinho</option>
-                <option value="Vilas do Atlântico">Vilas do Atlântico</option>
+                <option value="Vilas do AtlÃ¢ntico">Vilas do AtlÃ¢ntico</option>
                 <option value="Ipitanga">Ipitanga</option>
                 <option value="Pitangueiras">Pitangueiras</option>
                 <option value="Centro - Lauro de Freitas">Centro - Lauro de Freitas</option>
-                <option value="Portão">Portão</option>
+                <option value="PortÃ£o">PortÃ£o</option>
                 <option value="Caji">Caji</option>
               </optgroup>
               <option value="__CUSTOM__">Outro bairro/localizacao</option>
@@ -182,7 +248,7 @@
         <div class="row">
           <div><label>Quartos</label><input id="p-bedrooms" type="number" min="0" value="0"></div>
           <div><label>Banheiros</label><input id="p-bathrooms" type="number" min="0" value="0"></div>
-          <div><label>Area (m²)</label><input id="p-area" type="number" min="1"></div>
+          <div><label>Area (mÂ²)</label><input id="p-area" type="number" min="1"></div>
         </div>
 
         <div class="row">
@@ -195,8 +261,8 @@
             <input id="p-longitude" type="number" step="0.0000001" placeholder="-38.5011000">
           </div>
           <div>
-            <label>Apoio rápido</label>
-            <button class="btn alt" id="map-open-btn" type="button">Abrir Google Maps da região</button>
+            <label>Apoio rÃ¡pido</label>
+            <button class="btn alt" id="map-open-btn" type="button">Abrir Google Maps da regiÃ£o</button>
             <div class="hint">Copie as coordenadas do Maps e cole aqui.</div>
           </div>
         </div>
@@ -206,7 +272,7 @@
             <label>Status</label>
             <select id="p-status">
               <option>Pronto</option>
-              <option>Lançamento</option>
+              <option>LanÃ§amento</option>
               <option>Em obra</option>
               <option>Reservado</option>
               <option>Vendido</option>
@@ -221,13 +287,60 @@
 
         <div class="card" style="padding:12px;margin:12px 0">
           <h3 style="margin-bottom:8px">Caracteristicas prontas</h3>
-          <div class="tag-grid" id="feature-tags"></div>
+          <div class="feature-tools">
+            <input id="feature-search" placeholder="Buscar caracteristica...">
+            <div class="feature-actions">
+              <button class="btn alt" id="feature-check-visible" type="button">Marcar visiveis</button>
+              <button class="btn alt" id="feature-uncheck-visible" type="button">Desmarcar visiveis</button>
+            </div>
+          </div>
+          <div class="feature-groups" id="feature-tags"></div>
           <div class="hint">Essas caracteristicas entram automaticamente no texto do anuncio.</div>
         </div>
 
         <div>
           <label>Descricao</label>
+          <div class="desc-tools">
+            <button class="btn alt desc-tool" type="button" data-desc-action="bold"><strong>B</strong> Negrito</button>
+            <button class="btn alt desc-tool" type="button" data-desc-action="italic"><em>I</em> Italico</button>
+            <button class="btn alt desc-tool" type="button" data-desc-action="list">Lista</button>
+            <button class="btn alt desc-tool" type="button" data-desc-action="subtitle">Subtitulo</button>
+            <button class="btn alt desc-tool" type="button" data-desc-action="organize">Organizar texto</button>
+            <button class="btn alt desc-tool" type="button" data-desc-action="clear">Limpar formatacao</button>
+          </div>
           <textarea id="p-description" placeholder="Descreva os diferenciais do imovel"></textarea>
+          <div class="hint">Atalhos: Ctrl+B (negrito) e Ctrl+I (italico). Formato aceito no site: <code>**texto**</code>, <code>*texto*</code> e lista com <code>- item</code>. Colagem inteligente ativa para preservar negrito/listas.</div>
+        </div>
+
+        <div class="card" style="padding:12px;margin:12px 0;border-style:dashed">
+          <h3 style="margin-bottom:8px">Dados privados (somente ADM)</h3>
+          <div class="hint" style="margin-bottom:10px">Informacoes sensiveis para operacao interna. Nao sao exibidas na area publica do site.</div>
+          <div class="row">
+            <div><label>Proprietario(a)</label><input id="pr-owner-name" placeholder="Nome completo"></div>
+            <div><label>Telefone do proprietario</label><input id="pr-owner-phone" placeholder="(71) 99999-9999"></div>
+            <div><label>Email do proprietario</label><input id="pr-owner-email" type="email" placeholder="email@dominio.com"></div>
+          </div>
+          <div class="row">
+            <div><label>Documento (CPF/CNPJ)</label><input id="pr-owner-document" placeholder="Somente ADM"></div>
+            <div>
+              <label>Tipo de pessoa</label>
+              <select id="pr-owner-type">
+                <option value="">Nao informado</option>
+                <option value="PF">PF</option>
+                <option value="PJ">PJ</option>
+              </select>
+            </div>
+            <div><label>Status do contrato</label><input id="pr-contract-status" placeholder="Ex: Captacao ativa"></div>
+          </div>
+          <div class="row">
+            <div><label>Comissao venda (%)</label><input id="pr-commission-sale" type="number" min="0" max="100" step="0.01" placeholder="6.00"></div>
+            <div><label>Comissao aluguel (%)</label><input id="pr-commission-rent" type="number" min="0" max="100" step="0.01" placeholder="10.00"></div>
+            <div><label>Local das chaves</label><input id="pr-keys-location" placeholder="Ex: Portaria / Corretor"></div>
+          </div>
+          <div>
+            <label>Observacoes internas</label>
+            <textarea id="pr-internal-notes" placeholder="Nao aparece no site publico"></textarea>
+          </div>
         </div>
 
         <div class="row-2">
@@ -251,24 +364,70 @@
       </div>
 
       <div class="grid">
-        <div class="card">
+        <div class="card section-anchor" id="section-imoveis">
           <div class="toolbar">
             <h3>Imoveis cadastrados</h3>
-            <span class="pill" id="list-count">0 itens</span>
+            <div class="actions">
+              <span class="pill" id="list-count">0 itens</span>
+              <button class="btn alt" type="button" id="list-new-property">+ Novo imovel</button>
+            </div>
           </div>
+          <div class="list-filters">
+            <input id="list-search" placeholder="Buscar por titulo, codigo ou bairro...">
+            <select id="list-status">
+              <option value="">Todos status</option>
+              <option value="published">Publicados</option>
+              <option value="hidden">Ocultos</option>
+              <option value="available">Disponiveis</option>
+            </select>
+            <select id="list-date">
+              <option value="desc">Mais recentes</option>
+              <option value="asc">Mais antigos</option>
+            </select>
+          </div>
+          <div class="batch-bar">
+            <button class="btn alt" type="button" id="list-batch-publish">Publicar selecionados</button>
+            <button class="btn alt" type="button" id="list-batch-hide">Ocultar selecionados</button>
+            <button class="btn danger" type="button" id="list-batch-delete">Excluir selecionados</button>
+            <span class="muted" id="list-selected-info">0 selecionados</span>
+          </div>
+          <div class="muted" id="list-filter-info"></div>
           <div id="list"></div>
+          <div class="pager">
+            <div class="actions">
+              <button class="btn alt" type="button" id="list-prev-page">Anterior</button>
+              <button class="btn alt" type="button" id="list-next-page">Proxima</button>
+            </div>
+            <div class="actions">
+              <span class="muted" id="list-page-info">Pagina 1 de 1</span>
+              <select id="list-page-size">
+                <option value="10">10/pag</option>
+                <option value="25" selected>25/pag</option>
+                <option value="50">50/pag</option>
+                <option value="100">100/pag</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <h3>Leads recentes</h3>
+        <div class="card section-anchor" id="section-leads">
+          <div class="toolbar">
+            <h3>Leads recentes</h3>
+            <span class="pill" id="leads-count">0 leads</span>
+          </div>
+          <div class="list-filters leads">
+            <input id="leads-search" placeholder="Buscar lead por nome, telefone ou email...">
+            <input id="leads-date" type="date" title="Filtrar por data do lead">
+          </div>
+          <div class="muted" id="leads-filter-info"></div>
           <div id="leads"></div>
         </div>
       </div>
     </div>
   </div>
+  <div id="toast-wrap" class="toast-wrap"></div>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqlPOcPH8zOI2TiwZdwRs_KJUePHrtFEo&language=pt-BR&region=BR"></script>
   <script>
-    let token = localStorage.getItem("admin_token") || "";
     let currentImages = [];
     let selectedFeatures = new Set();
     let tempPreviewUrls = [];
@@ -279,36 +438,88 @@
     let cepMarker = null;
     let cepInfoWindow = null;
     let cepGeocoder = null;
-    const FEATURES = [
-      "Varanda gourmet", "Suite", "Closet", "Armarios planejados", "Nascente", "Andar alto",
-      "Vista mar", "Piscina", "Academia", "Condominio fechado", "Portaria 24h", "Elevador",
-      "2 vagas", "3 vagas", "Pet friendly", "Proximo ao metro"
-    ];
+    let propertySortKey = "created_at";
+    let propertySortDir = "desc";
+    let propertyPage = 1;
+    let propertyPageSize = 25;
+    let filteredPropertyItems = [];
+    const selectedPropertyIds = new Set();
+    const FEATURE_GROUPS = {
+      "Internas e Acabamento": [
+        "Suite", "Closet", "Semi-suite", "Lavabo", "Dependencia completa", "DCE", "Escritorio",
+        "Home office", "Sala ampliada", "Varanda", "Varanda gourmet", "Sacada", "Garden",
+        "Quintal", "Terraco", "Cobertura duplex", "Porteira fechada", "Mobiliado", "Semi-mobiliado",
+        "Armarios planejados", "Moveis planejados", "Ar-condicionado", "Iluminacao em LED",
+        "Piso em porcelanato", "Rebaixamento em gesso", "Nascente", "Andar alto", "Vista mar",
+        "Vista livre", "Ventilacao cruzada", "Planta inteligente", "Pe direito duplo",
+        "Cozinha americana", "Cozinha ampla", "Area de servico", "Despensa", "Deposito privativo",
+        "Entrada de servico", "Banheiro de servico"
+      ],
+      "Lazer e CondomÃ­nio": [
+        "Piscina", "Piscina aquecida", "Piscina infantil", "Deck", "Academia", "Espaco gourmet",
+        "Churrasqueira", "Forno de pizza", "Salao de festas", "Salao de jogos", "Brinquedoteca",
+        "Playground", "Quadra poliesportiva", "Quadra de tenis", "Campo de futebol",
+        "Espaco pet", "Pet friendly", "Bicicletario", "Coworking", "Cinema", "Spa", "Sauna",
+        "Hidromassagem", "Rooftop"
+      ],
+      "SeguranÃ§a e Acesso": [
+        "Condominio fechado", "Portaria 24h", "Portaria remota", "Guarita", "Interfone",
+        "Acesso por biometria", "Controle de acesso", "Seguranca 24h", "Monitoramento por cameras",
+        "Gerador", "Elevador", "Elevador de servico"
+      ],
+      "Vagas e Mobilidade": [
+        "1 vaga", "2 vagas", "3 vagas", "4+ vagas", "Vaga coberta", "Vaga para visitante",
+        "Vaga presa", "Vaga livre"
+      ],
+      "LocalizaÃ§Ã£o e Perfil": [
+        "Proximo ao metro", "Proximo a praia", "Pe na areia", "Vista para lagoa", "Beira rio",
+        "Proximo a shopping", "Proximo a escola", "Proximo a hospital", "Proximo a mercado",
+        "Rua tranquila", "Alto padrao", "Pronto para morar", "Reformado", "Recem reformado",
+        "Nunca habitado"
+      ],
+      "Comercial e Industrial": [
+        "Galpao", "Loja terrea", "Sobreloja", "Sala comercial", "Recepcao", "Mezanino",
+        "Piso elevado", "Forro modular", "Vao livre", "Doca", "Patio de manobra",
+        "Energia trifasica"
+      ],
+      "Terrenos e DocumentaÃ§Ã£o": [
+        "Terreno plano", "Terreno de esquina", "Frente nascente", "Frente para avenida",
+        "Lote em condominio", "Potencial construtivo", "Aceita financiamento", "Escriturado",
+        "Documentacao regular", "IPTU em dia", "Aceita permuta"
+      ],
+      "Rural e Sustentabilidade": [
+        "Poco artesiano", "Nascente de agua", "Area verde", "Pomar", "Curral", "Baia para cavalos",
+        "Casa de caseiro", "Energia solar", "Aquecimento solar", "Fossa septica"
+      ],
+      "Acessibilidade e Temporada": [
+        "Acesso PCD", "Banheiro adaptado", "Rampa de acesso", "Portas largas",
+        "Ideal para temporada", "Alta rentabilidade Airbnb", "Gestao de locacao ativa"
+      ]
+    };
     const CEP_HINTS = {
-      "Barra":"40140-110", "Ondina":"40170-010", "Vitória":"40080-010", "Pituba":"41830-530",
-      "Itaigara":"41815-020", "Caminho das Árvores":"41820-021", "Horto Florestal":"40295-140",
-      "Graça":"40150-090", "Rio Vermelho":"41940-100", "Patamares":"41680-110",
+      "Barra":"40140-110", "Ondina":"40170-010", "VitÃ³ria":"40080-010", "Pituba":"41830-530",
+      "Itaigara":"41815-020", "Caminho das Ãrvores":"41820-021", "Horto Florestal":"40295-140",
+      "GraÃ§a":"40150-090", "Rio Vermelho":"41940-100", "Patamares":"41680-110",
       "Stella Maris":"41600-500", "Alphaville":"41730-101", "Centro":"40020-000",
-      "Buraquinho":"42710-400", "Vilas do Atlântico":"42707-130", "Ipitanga":"42700-170",
-      "Pitangueiras":"42700-000", "Centro - Lauro de Freitas":"42702-000", "Portão":"42700-000", "Caji":"42700-000"
+      "Buraquinho":"42710-400", "Vilas do AtlÃ¢ntico":"42707-130", "Ipitanga":"42700-170",
+      "Pitangueiras":"42700-000", "Centro - Lauro de Freitas":"42702-000", "PortÃ£o":"42700-000", "Caji":"42700-000"
     };
 
-    const IMAGE_MIN_WIDTH = 1400;
-    const IMAGE_MIN_HEIGHT = 900;
-    const IMAGE_MAX_SIZE_MB = 12;
+    const IMAGE_RECOMMENDED_WIDTH = 1400;
+    const IMAGE_RECOMMENDED_HEIGHT = 900;
 
     const api = (url, opts = {}) => fetch(url, {
       ...opts,
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(opts.headers || {})
       }
     }).then(async (r) => {
       const body = await r.json().catch(() => ({}));
       if (!r.ok && r.status === 401) {
-        localStorage.removeItem("admin_token");
-        token = "";
+        q("panel").classList.add("hidden");
+        q("login-card").classList.remove("hidden");
       }
       return body;
     });
@@ -316,6 +527,118 @@
     function q(id){ return document.getElementById(id); }
     function setLoginMsg(msg){ q("login-msg").textContent = msg || ""; }
     function setFormMsg(msg){ q("form-msg").textContent = msg || ""; }
+    function setPanelTab(tab){
+      const panel = q("panel");
+      if (!panel) return;
+      const next = ["cadastro","imoveis","leads"].includes(tab) ? tab : "imoveis";
+      panel.dataset.tab = next;
+      const map = { cadastro:"go-cadastro", imoveis:"go-imoveis", leads:"go-leads" };
+      ["go-cadastro","go-imoveis","go-leads"].forEach((id) => q(id)?.classList.remove("active"));
+      q(map[next])?.classList.add("active");
+    }
+    function showToast(message, type = "info", timeoutMs = 3600){
+      const wrap = q("toast-wrap");
+      if (!wrap) return;
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = String(message || "");
+      wrap.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, timeoutMs);
+    }
+    function clearFieldErrors(){
+      document.querySelectorAll(".field-error").forEach((el) => el.remove());
+      document.querySelectorAll(".field-invalid").forEach((el) => el.classList.remove("field-invalid"));
+    }
+
+    function fieldIdByKey(key){
+      const map = {
+        code: "p-code",
+        title: "p-title",
+        type: "p-type",
+        badge: "p-badge-select",
+        location: "p-location-select",
+        cep: "p-cep",
+        latitude: "p-latitude",
+        longitude: "p-longitude",
+        bedrooms: "p-bedrooms",
+        bathrooms: "p-bathrooms",
+        area: "p-area",
+        status: "p-status",
+        price: "p-price",
+        description: "p-description",
+        is_published: "p-published",
+        owner_name: "pr-owner-name",
+        owner_phone: "pr-owner-phone",
+        owner_email: "pr-owner-email",
+        owner_document: "pr-owner-document",
+        owner_type: "pr-owner-type",
+        contract_status: "pr-contract-status",
+        commission_sale: "pr-commission-sale",
+        commission_rent: "pr-commission-rent",
+        keys_location: "pr-keys-location",
+        internal_notes: "pr-internal-notes"
+      };
+      return map[key] || "";
+    }
+
+    function fieldLabel(key){
+      const labels = {
+        code: "Codigo",
+        title: "Titulo",
+        type: "Tipo",
+        badge: "Etiqueta",
+        location: "Bairro / Localizacao",
+        cep: "CEP",
+        latitude: "Latitude",
+        longitude: "Longitude",
+        bedrooms: "Quartos",
+        bathrooms: "Banheiros",
+        area: "Area",
+        status: "Status",
+        price: "Preco",
+        description: "Descricao",
+        is_published: "Publicacao",
+        owner_name: "Proprietario(a)",
+        owner_phone: "Telefone do proprietario",
+        owner_email: "Email do proprietario",
+        owner_document: "Documento (CPF/CNPJ)",
+        owner_type: "Tipo de pessoa",
+        contract_status: "Status do contrato",
+        commission_sale: "Comissao venda",
+        commission_rent: "Comissao aluguel",
+        keys_location: "Local das chaves",
+        internal_notes: "Observacoes internas"
+      };
+      return labels[key] || key;
+    }
+
+    function showIssuesInline(issues, fallbackMessage = ""){
+      clearFieldErrors();
+      if (!Array.isArray(issues) || !issues.length) {
+        if (fallbackMessage) setFormMsg(fallbackMessage);
+        return;
+      }
+      const generic = [];
+      issues.forEach((issue) => {
+        const path = Array.isArray(issue.path) ? issue.path.join(".") : "";
+        const key = path.split(".").pop() || path || "campo";
+        const message = issue.message || "valor invalido";
+        const fieldId = fieldIdByKey(key);
+        const field = fieldId ? q(fieldId) : null;
+        if (!field) {
+          generic.push(`- ${fieldLabel(key)}: ${message}`);
+          return;
+        }
+        field.classList.add("field-invalid");
+        const err = document.createElement("div");
+        err.className = "field-error";
+        err.textContent = message;
+        field.insertAdjacentElement("afterend", err);
+      });
+      if (generic.length) setFormMsg(`Corrija: ${generic.join(" ")}`);
+    }
 
     function slugify(txt){
       return String(txt || "")
@@ -366,22 +689,19 @@
     }
 
     async function validateImageQuality(files){
-      if (!files.length) return { ok: true };
+      if (!files.length) return { ok: true, warnings: [] };
+      const warnings = [];
       for (const file of files) {
-        const maxBytes = IMAGE_MAX_SIZE_MB * 1024 * 1024;
-        if (file.size > maxBytes) {
-          return { ok: false, message: `A imagem \"${file.name}\" excede ${IMAGE_MAX_SIZE_MB}MB.` };
-        }
         try {
           const meta = await getImageMeta(file);
-          if (meta.width < IMAGE_MIN_WIDTH || meta.height < IMAGE_MIN_HEIGHT) {
-            return { ok: false, message: `A imagem \"${file.name}\" esta com baixa resolucao (${meta.width}x${meta.height}). Minimo recomendado: ${IMAGE_MIN_WIDTH}x${IMAGE_MIN_HEIGHT}.` };
+          if (meta.width < IMAGE_RECOMMENDED_WIDTH || meta.height < IMAGE_RECOMMENDED_HEIGHT) {
+            warnings.push(`\"${file.name}\": ${meta.width}x${meta.height} (recomendado ${IMAGE_RECOMMENDED_WIDTH}x${IMAGE_RECOMMENDED_HEIGHT} ou maior).`);
           }
         } catch (_) {
-          return { ok: false, message: `Nao foi possivel validar a imagem \"${file.name}\".` };
+          warnings.push(`Nao foi possivel validar a resolucao de \"${file.name}\".`);
         }
       }
-      return { ok: true };
+      return { ok: true, warnings };
     }
 
     function initCepMap() {
@@ -454,7 +774,34 @@
     async function geocodeAddress(addressText){
       const query = String(addressText || "").trim();
       if (!query) return null;
-      return googleGeocode({ address: query, region: "br" });
+      const byGoogle = await googleGeocode({ address: query, region: "br" });
+      if (byGoogle) return byGoogle;
+      return geocodeByNominatim(query);
+    }
+
+    async function geocodeByNominatim(addressText){
+      const query = String(addressText || "").trim();
+      if (!query) return null;
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+        const response = await fetch(url, {
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": "pt-BR,pt;q=0.9"
+          },
+          cache: "no-store"
+        });
+        if (!response.ok) return null;
+        const data = await response.json();
+        const best = Array.isArray(data) ? data[0] : null;
+        if (!best) return null;
+        const lat = Number(best.lat);
+        const lng = Number(best.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return { lat, lng, precise: false };
+      } catch (_) {
+        return null;
+      }
     }
 
     async function geocodeByCep(cepDigits, cidade = "", uf = "", bairro = "", rua = ""){
@@ -472,11 +819,18 @@
     }
 
     function renderFeatureTags(){
-      q("feature-tags").innerHTML = FEATURES.map((label) => `
-        <label class="tag">
-          <input type="checkbox" value="${label}">
-          <span>${label}</span>
-        </label>
+      q("feature-tags").innerHTML = Object.entries(FEATURE_GROUPS).map(([group, items]) => `
+        <div class="feature-group">
+          <h4>${group}</h4>
+          <div class="tag-grid">
+            ${items.map((label) => `
+              <label class="tag" data-feature-label="${label}">
+                <input type="checkbox" value="${label}">
+                <span>${label}</span>
+              </label>
+            `).join("")}
+          </div>
+        </div>
       `).join("");
       q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => {
         el.addEventListener("change", () => {
@@ -486,28 +840,130 @@
       });
     }
 
+    function filterFeatureTags(){
+      const term = normalizeText(q("feature-search").value);
+      q("feature-tags").querySelectorAll(".feature-group").forEach((groupEl) => {
+        let visibleCount = 0;
+        groupEl.querySelectorAll("label[data-feature-label]").forEach((labelEl) => {
+          const label = normalizeText(labelEl.getAttribute("data-feature-label"));
+          const show = !term || label.includes(term);
+          labelEl.classList.toggle("hidden", !show);
+          if (show) visibleCount += 1;
+        });
+        groupEl.classList.toggle("hidden", visibleCount === 0);
+      });
+    }
+
+    function markVisibleFeatures(checked){
+      q("feature-tags").querySelectorAll("label[data-feature-label]:not(.hidden) input[type='checkbox']").forEach((el) => {
+        el.checked = checked;
+        if (checked) selectedFeatures.add(el.value);
+        else selectedFeatures.delete(el.value);
+      });
+    }
+
     function extractFeaturesFromDescription(desc){
-      const text = String(desc || "");
-      const m = text.match(/Características:\s*(.+)$/im);
+      const text = String(desc || "").replace(/\r\n/g, "\n");
+      const m = text.match(/(?:^|\n)\s*Caracter(?:i|Ã­)sticas:\s*([\s\S]*)$/im);
       if (!m) return { clean: text.trim(), features: [] };
-      const line = m[1] || "";
-      const parsed = line.split(",").map((x) => x.trim()).filter(Boolean);
-      const clean = text.replace(/\n?\s*Características:\s*.+$/im, "").trim();
+
+      const rawList = String(m[1] || "").trim();
+      const parsed = rawList
+        .split(/\n|,/)
+        .map((x) => x.replace(/^[-*]\s+/, "").trim())
+        .filter(Boolean);
+      const markerPos = m.index || 0;
+      const clean = text.slice(0, markerPos).trim();
       return { clean, features: uniqueFeatures(parsed) };
     }
 
+    function normalizeDescriptionStructure(text){
+      let normalized = String(text || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\u00a0/g, " ")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/[ \t]{2,}/g, " ")
+        .replace(/^\s*[•●▪◦]\s+/gm, "- ")
+        .replace(/\s*[|]\s*/g, "\n")
+        .trim();
+
+      if (!normalized.includes("\n") && normalized.length > 280) {
+        normalized = normalized.replace(/([.!?])\s+(?=[A-ZÁÀÂÃÉÈÊÍÓÔÕÚÇ])/g, "$1\n");
+      }
+
+      normalized = normalized
+        .split("\n")
+        .map((line) => line.trim())
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+      return normalized;
+    }
+
+    function replaceSelection(textarea, insertedText) {
+      if (!textarea) return;
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? 0;
+      const value = textarea.value || "";
+      const text = String(insertedText || "");
+      textarea.value = `${value.slice(0, start)}${text}${value.slice(end)}`;
+      const caret = start + text.length;
+      textarea.focus();
+      textarea.setSelectionRange(caret, caret);
+    }
+
+    function convertRichHtmlToDescription(html) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(String(html || ""), "text/html");
+
+      function walk(node) {
+        if (!node) return "";
+        if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || "";
+        if (node.nodeType !== Node.ELEMENT_NODE) return "";
+
+        const tag = (node.tagName || "").toLowerCase();
+        const inner = Array.from(node.childNodes || []).map(walk).join("");
+        const cleanInner = inner.replace(/\s+\n/g, "\n");
+
+        if (tag === "strong" || tag === "b") return `**${cleanInner.trim()}**`;
+        if (tag === "em" || tag === "i") return `*${cleanInner.trim()}*`;
+        if (tag === "br") return "\n";
+        if (tag === "li") return `- ${cleanInner.trim()}\n`;
+        if (tag === "ul" || tag === "ol") return `${cleanInner}\n`;
+        if (tag === "p" || tag === "div" || /^h[1-6]$/.test(tag)) return `${cleanInner.trim()}\n\n`;
+        return cleanInner;
+      }
+
+      const raw = Array.from(doc.body.childNodes || []).map(walk).join("");
+      return normalizeDescriptionStructure(raw);
+    }
+
     function buildDescriptionWithFeatures(baseText){
-      const clean = String(baseText || "").trim();
+      const clean = normalizeDescriptionStructure(baseText);
       const features = uniqueFeatures([...selectedFeatures]);
       if (!features.length) return clean;
-      const suffix = `Características: ${features.join(", ")}`;
+      const suffix = `CaracterÃ­sticas:\n${features.map((item) => `- ${item}`).join("\n")}`;
       return clean ? `${clean}\n\n${suffix}` : suffix;
     }
 
     function getBadgeValue(){
       const selectVal = q("p-badge-select").value;
-      if (selectVal === "__CUSTOM__") return q("p-badge-custom").value.trim() || "⭐ DESTAQUE";
-      return selectVal;
+      if (selectVal === "__CUSTOM__") return normalizeBadge(q("p-badge-custom").value.trim()) || "⭐ DESTAQUE";
+      return normalizeBadge(selectVal);
+    }
+
+    function normalizeBadge(value){
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const clean = normalizeText(raw).replace(/[^a-z\\s]/g, " ").replace(/\\s+/g, " ").trim();
+      if (clean.includes("destaque")) return "⭐ DESTAQUE";
+      if (clean.includes("novo")) return "🆕 NOVO";
+      if (clean.includes("oportunidade")) return "💰 OPORTUNIDADE";
+      if (clean.includes("alta procura")) return "🔥 ALTA PROCURA";
+      if (clean.includes("exclusivo")) return "🏡 EXCLUSIVO";
+      if (clean.includes("investimento")) return "📈 INVESTIMENTO";
+      return raw;
     }
 
     function getLocationValue(){
@@ -521,6 +977,69 @@
       const base = `${q("p-type").value || ""}-${q("p-title").value || ""}-${getLocationValue() || ""}`;
       const slug = slugify(base);
       q("p-code").value = (slug || "imovel").slice(0, 50);
+    }
+
+    function insertAtSelection(textarea, before, after = "", fallback = "") {
+      if (!textarea) return;
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? 0;
+      const value = textarea.value || "";
+      const selected = value.slice(start, end) || fallback;
+      const next = `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
+      textarea.value = next;
+      const caret = start + before.length + selected.length + after.length;
+      textarea.focus();
+      textarea.setSelectionRange(caret, caret);
+    }
+
+    function toggleLineList(textarea) {
+      if (!textarea) return;
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? 0;
+      const value = textarea.value || "";
+      const selected = value.slice(start, end);
+      const source = selected || "Novo item";
+      const lines = source.split(/\r?\n/);
+      const allListed = lines.every((line) => !line.trim() || line.trim().startsWith("- "));
+      const nextLines = lines.map((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return "";
+        if (allListed) return trimmed.replace(/^- /, "");
+        return trimmed.startsWith("- ") ? trimmed : `- ${trimmed}`;
+      });
+      const transformed = nextLines.join("\n");
+      const next = `${value.slice(0, start)}${transformed}${value.slice(end)}`;
+      textarea.value = next;
+      const caret = start + transformed.length;
+      textarea.focus();
+      textarea.setSelectionRange(caret, caret);
+    }
+
+    function clearDescriptionFormatting(textarea) {
+      if (!textarea) return;
+      const value = String(textarea.value || "");
+      textarea.value = value
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/^\s*-\s+/gm, "")
+        .trim();
+      textarea.focus();
+    }
+
+    function applyDescriptionTool(action) {
+      const textarea = q("p-description");
+      if (!textarea) return;
+
+      if (action === "bold") return insertAtSelection(textarea, "**", "**", "texto em destaque");
+      if (action === "italic") return insertAtSelection(textarea, "*", "*", "texto em enfase");
+      if (action === "subtitle") return insertAtSelection(textarea, "\n\n", "\n", "Subtitulo");
+      if (action === "list") return toggleLineList(textarea);
+      if (action === "organize") {
+        textarea.value = normalizeDescriptionStructure(textarea.value);
+        textarea.focus();
+        return;
+      }
+      if (action === "clear") return clearDescriptionFormatting(textarea);
     }
 
     function handleBadgeMode(){
@@ -565,7 +1084,11 @@
         info.textContent = "";
         return;
       }
-      if (cep === lastCepLookup) return;
+      const currentLat = parseCoordinate(q("p-latitude").value);
+      const currentLng = parseCoordinate(q("p-longitude").value);
+      const hasCoords = Number.isFinite(currentLat) && Number.isFinite(currentLng);
+      const hasAddressHint = String(info.textContent || "").trim().length > 0;
+      if (cep === lastCepLookup && hasCoords && hasAddressHint) return;
       lastCepLookup = cep;
       const seq = ++cepLookupSeq;
       info.textContent = "Buscando endereco...";
@@ -629,14 +1152,14 @@
         body: JSON.stringify({ email: q("login-email").value.trim(), password: q("login-password").value })
       });
       if (!data.ok) return setLoginMsg(data.message || "Falha no login");
-      token = data.token;
-      localStorage.setItem("admin_token", token);
       q("login-card").classList.add("hidden");
       q("panel").classList.remove("hidden");
+      setPanelTab("imoveis");
       await loadAll();
     }
 
     function clearForm() {
+      clearFieldErrors();
       q("p-id").value = "";
       q("p-code").value = "";
       q("p-title").value = "";
@@ -647,6 +1170,7 @@
       q("p-location").value = "";
       q("p-location").classList.add("hidden");
       q("p-cep").value = "";
+      lastCepLookup = "";
       q("cep-address").textContent = "";
       q("p-latitude").value = "";
       q("p-longitude").value = "";
@@ -666,6 +1190,16 @@
       q("p-description").value = "";
       q("p-published").value = "true";
       q("p-images").value = "";
+      q("pr-owner-name").value = "";
+      q("pr-owner-phone").value = "";
+      q("pr-owner-email").value = "";
+      q("pr-owner-document").value = "";
+      q("pr-owner-type").value = "";
+      q("pr-contract-status").value = "";
+      q("pr-commission-sale").value = "";
+      q("pr-commission-rent").value = "";
+      q("pr-keys-location").value = "";
+      q("pr-internal-notes").value = "";
       currentImages = [];
       selectedFeatures = new Set();
       q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => { el.checked = false; });
@@ -674,88 +1208,331 @@
       setFormMsg("");
     }
 
+    function privatePayload() {
+      return {
+        owner_name: q("pr-owner-name").value.trim() || null,
+        owner_phone: q("pr-owner-phone").value.trim() || null,
+        owner_email: q("pr-owner-email").value.trim() || null,
+        owner_document: q("pr-owner-document").value.trim() || null,
+        owner_type: q("pr-owner-type").value || null,
+        contract_status: q("pr-contract-status").value.trim() || null,
+        commission_sale: q("pr-commission-sale").value === "" ? null : Number(q("pr-commission-sale").value),
+        commission_rent: q("pr-commission-rent").value === "" ? null : Number(q("pr-commission-rent").value),
+        keys_location: q("pr-keys-location").value.trim() || null,
+        internal_notes: q("pr-internal-notes").value.trim() || null
+      };
+    }
+
+    function applyPrivateData(item) {
+      const data = item || {};
+      q("pr-owner-name").value = data.owner_name || "";
+      q("pr-owner-phone").value = data.owner_phone || "";
+      q("pr-owner-email").value = data.owner_email || "";
+      q("pr-owner-document").value = data.owner_document || "";
+      q("pr-owner-type").value = data.owner_type || "";
+      q("pr-contract-status").value = data.contract_status || "";
+      q("pr-commission-sale").value = data.commission_sale ?? "";
+      q("pr-commission-rent").value = data.commission_rent ?? "";
+      q("pr-keys-location").value = data.keys_location || "";
+      q("pr-internal-notes").value = data.internal_notes || "";
+    }
+
+    async function loadPrivateData(propertyId) {
+      if (!propertyId) return applyPrivateData(null);
+      const data = await api(`/api/admin/properties/${propertyId}/private`);
+      if (!data.ok) return;
+      applyPrivateData(data.item || null);
+    }
+
     async function saveProperty() {
       setFormMsg("");
+      clearFieldErrors();
       const id = q("p-id").value;
       const files = Array.from(q("p-images").files || []);
       const qualityCheck = await validateImageQuality(files);
-      if (!qualityCheck.ok) return alert(qualityCheck.message);
+      if ((qualityCheck.warnings || []).length) {
+        setFormMsg(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`);
+      }
+
       const location = getLocationValue();
       const badge = getBadgeValue();
       const baseCode = (q("p-code").value.trim() || slugify(`${q("p-type").value}-${q("p-title").value}-${location}`) || "imovel").slice(0, 50);
       const code = id ? baseCode : `${baseCode}-${Date.now().toString(36).slice(-4)}`;
       const description = buildDescriptionWithFeatures(q("p-description").value);
+      const latitude = parseCoordinate(q("p-latitude").value);
+      const longitude = parseCoordinate(q("p-longitude").value);
 
       const payload = {
         code,
-        title: q("p-title").value.trim(),
-        type: q("p-type").value,
-        badge,
-        location,
-        cep: normalizeCep(q("p-cep").value),
-        latitude: parseCoordinate(q("p-latitude").value),
-        longitude: parseCoordinate(q("p-longitude").value),
-        bedrooms: Number(q("p-bedrooms").value || 0),
-        bathrooms: Number(q("p-bathrooms").value || 0),
-        area: Number(q("p-area").value || 0),
-        status: q("p-status").value,
-        price: Number(q("p-price").value || 0),
+        title: q("p-title").value.trim() || null,
+        type: q("p-type").value || null,
+        badge: badge || null,
+        location: location || null,
+        cep: normalizeCep(q("p-cep").value || "") || null,
+        latitude: Number.isFinite(latitude) ? latitude : null,
+        longitude: Number.isFinite(longitude) ? longitude : null,
+        bedrooms: q("p-bedrooms").value === "" ? null : Number(q("p-bedrooms").value || 0),
+        bathrooms: q("p-bathrooms").value === "" ? null : Number(q("p-bathrooms").value || 0),
+        area: q("p-area").value === "" ? null : Number(q("p-area").value || 0),
+        status: q("p-status").value || null,
+        price: q("p-price").value === "" ? null : Number(q("p-price").value || 0),
         description,
         is_published: q("p-published").value === "true"
       };
 
-      if (!payload.title || !payload.location || !payload.price || !payload.area || !payload.description) {
-        return alert("Preencha titulo, localizacao, area, preco e descricao.");
-      }
-      if (!payload.cep || !/^\d{5}-\d{3}$/.test(payload.cep)) {
-        return alert("Preencha o CEP no formato 00000-000.");
-      }
-      if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
-        return alert("Preencha latitude e longitude para o mapa do imóvel.");
-      }
-
       const form = new FormData();
-      Object.entries(payload).forEach(([k, v]) => form.append(k, String(v)));
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v === null || v === undefined) return;
+        form.append(k, String(v));
+      });
       form.append("image_urls", JSON.stringify(currentImages));
       files.forEach((f) => form.append("images", f));
 
       const data = await fetch(id ? `/api/properties/${id}` : "/api/properties", {
         method: id ? "PUT" : "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "same-origin",
         body: form
       }).then((r) => r.json());
 
-      if (!data.ok) return alert(data.message || "Erro ao salvar");
+      if (!data.ok) {
+        showIssuesInline(data.issues, data.message || "Erro ao salvar.");
+        return;
+      }
+
+      const propertyId = data?.item?.id || id;
+      const privateData = await api(`/api/admin/properties/${propertyId}/private`, {
+        method: "PUT",
+        body: JSON.stringify(privatePayload())
+      });
+      if (!privateData.ok) {
+        showIssuesInline(privateData.issues, privateData.message || "Imovel salvo, mas falhou ao salvar dados privados.");
+        return;
+      }
+
       clearForm();
       setFormMsg("Imovel salvo com sucesso.");
       await loadProperties();
+    }
+
+    function formatDateTime(value){
+      const date = new Date(value || "");
+      if (!Number.isFinite(date.getTime())) return "--";
+      return date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    function updateSelectedInfo(){
+      const count = selectedPropertyIds.size;
+      q("list-selected-info").textContent = `${count} selecionados`;
+      q("list-batch-publish").disabled = count === 0;
+      q("list-batch-hide").disabled = count === 0;
+      q("list-batch-delete").disabled = count === 0;
+    }
+
+    function getSortIndicator(key){
+      if (propertySortKey !== key) return "";
+      return propertySortDir === "asc" ? " ▲" : " ▼";
+    }
+
+    function sortPropertyItems(list){
+      const items = [...list];
+      items.sort((a, b) => {
+        let va;
+        let vb;
+        switch (propertySortKey) {
+          case "price":
+            va = Number(a.price || 0);
+            vb = Number(b.price || 0);
+            break;
+          case "created_at":
+            va = Date.parse(a.created_at || 0) || 0;
+            vb = Date.parse(b.created_at || 0) || 0;
+            break;
+          case "is_published":
+            va = a.is_published ? 1 : 0;
+            vb = b.is_published ? 1 : 0;
+            break;
+          default:
+            va = normalizeText(a[propertySortKey] || "");
+            vb = normalizeText(b[propertySortKey] || "");
+            break;
+        }
+        if (va === vb) return 0;
+        const cmp = va > vb ? 1 : -1;
+        return propertySortDir === "asc" ? cmp : -cmp;
+      });
+      return items;
+    }
+
+    function togglePropertySort(key){
+      if (propertySortKey === key) propertySortDir = propertySortDir === "asc" ? "desc" : "asc";
+      else {
+        propertySortKey = key;
+        propertySortDir = key === "created_at" || key === "price" ? "desc" : "asc";
+      }
+      if (propertySortKey === "created_at") q("list-date").value = propertySortDir;
+      propertyPage = 1;
+      renderPropertyList(filteredPropertyItems);
+    }
+
+    function renderPropertyList(items){
+      const sorted = sortPropertyItems(items || []);
+      filteredPropertyItems = sorted;
+      const total = sorted.length;
+      const totalPages = Math.max(1, Math.ceil(total / propertyPageSize));
+      propertyPage = Math.min(Math.max(1, propertyPage), totalPages);
+      const start = (propertyPage - 1) * propertyPageSize;
+      const pageItems = sorted.slice(start, start + propertyPageSize);
+
+      q("list-page-info").textContent = `Pagina ${propertyPage} de ${totalPages}`;
+      q("list-prev-page").disabled = propertyPage <= 1;
+      q("list-next-page").disabled = propertyPage >= totalPages;
+
+      if (!total) {
+        q("list").innerHTML = `<div class="table-wrap"><div class="table-empty">Nenhum imovel encontrado com os filtros atuais.</div></div>`;
+        updateSelectedInfo();
+        return;
+      }
+
+      q("list").innerHTML = `
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="list-check-all"></th>
+                <th class="sortable" data-sort="title">Imovel${getSortIndicator("title")}</th>
+                <th class="sortable" data-sort="code">Codigo${getSortIndicator("code")}</th>
+                <th class="sortable" data-sort="type">Tipo${getSortIndicator("type")}</th>
+                <th class="sortable" data-sort="location">Bairro${getSortIndicator("location")}</th>
+                <th class="sortable" data-sort="price">Preco${getSortIndicator("price")}</th>
+                <th class="sortable" data-sort="is_published">Status${getSortIndicator("is_published")}</th>
+                <th class="sortable" data-sort="created_at">Cadastro${getSortIndicator("created_at")}</th>
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pageItems.map((i) => `
+                <tr class="${selectedPropertyIds.has(i.id) ? "is-selected" : ""}">
+                  <td><input type="checkbox" class="list-check-item" data-id="${i.id}" ${selectedPropertyIds.has(i.id) ? "checked" : ""}></td>
+                  <td>
+                    <span class="td-title">${i.title || "Sem titulo"}</span>
+                    <span class="td-sub">Lat ${i.latitude ?? "--"} | Lng ${i.longitude ?? "--"}</span>
+                  </td>
+                  <td>${i.code || "--"}</td>
+                  <td>${i.type || "--"}</td>
+                  <td>${i.location || "--"}</td>
+                  <td class="td-price">${Number(i.price || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+                  <td><span class="status ${i.is_published ? "on" : "off"}">${i.is_published ? "Publicado" : "Oculto"}</span></td>
+                  <td>${formatDateTime(i.created_at)}</td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="btn alt" type="button" onclick="editItem('${i.id}')">Editar</button>
+                      <button class="btn danger" type="button" onclick="deleteItem('${i.id}')">Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      q("list").querySelectorAll("th.sortable").forEach((th) => {
+        th.addEventListener("click", () => togglePropertySort(th.dataset.sort));
+      });
+      q("list").querySelectorAll(".list-check-item").forEach((el) => {
+        el.addEventListener("change", () => {
+          const id = el.getAttribute("data-id");
+          if (!id) return;
+          if (el.checked) selectedPropertyIds.add(id);
+          else selectedPropertyIds.delete(id);
+          applyPropertyFilters();
+        });
+      });
+      q("list-check-all")?.addEventListener("change", (event) => {
+        const mark = !!event.target.checked;
+        pageItems.forEach((item) => {
+          if (mark) selectedPropertyIds.add(item.id);
+          else selectedPropertyIds.delete(item.id);
+        });
+        applyPropertyFilters();
+      });
+
+      const allChecked = pageItems.length > 0 && pageItems.every((item) => selectedPropertyIds.has(item.id));
+      if (q("list-check-all")) q("list-check-all").checked = allChecked;
+      updateSelectedInfo();
+    }
+
+    function applyPropertyFilters(){
+      const all = Array.isArray(window._items) ? window._items : [];
+      const term = normalizeText(q("list-search")?.value || "");
+      const status = q("list-status")?.value || "";
+      if (propertySortKey === "created_at") propertySortDir = q("list-date")?.value || "desc";
+
+      const validIds = new Set(all.map((i) => i.id));
+      Array.from(selectedPropertyIds).forEach((id) => { if (!validIds.has(id)) selectedPropertyIds.delete(id); });
+
+      const filtered = all.filter((i) => {
+        const haystack = normalizeText(`${i.title || ""} ${i.code || ""} ${i.location || ""}`);
+        const matchTerm = !term || haystack.includes(term);
+        const state = normalizeText(i.status || "");
+        const isAvailable = !!i.is_published && !state.includes("vendido") && !state.includes("reservado");
+        const matchStatus = !status
+          || (status === "published" && !!i.is_published)
+          || (status === "hidden" && !i.is_published)
+          || (status === "available" && isAvailable);
+        return matchTerm && matchStatus;
+      });
+
+      renderPropertyList(filtered);
+      const availableCount = filtered.filter((i) => {
+        const st = normalizeText(i.status || "");
+        return !!i.is_published && !st.includes("vendido") && !st.includes("reservado");
+      }).length;
+      q("list-filter-info").textContent = `${filtered.length} de ${all.length} exibidos • ${availableCount} disponiveis`;
     }
 
     async function loadProperties() {
       const data = await api("/api/properties");
       if (!data.ok) return;
       q("list-count").textContent = `${data.items.length} itens`;
-      q("list").innerHTML = data.items.map((i) => `
-        <div class="item">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
-            <strong>${i.title}</strong>
-            <span class="status ${i.is_published ? "on" : "off"}">${i.is_published ? "Publicado" : "Oculto"}</span>
-          </div>
-          ${i.location} - ${Number(i.price).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}<br>
-          <small>${i.code} - ${i.type}</small>
-          <div class="hint">Lat ${i.latitude ?? "--"} | Lng ${i.longitude ?? "--"}</div>
-          <div class="actions" style="margin-top:8px">
-            <button class="btn alt" type="button" onclick="editItem('${i.id}')">Editar</button>
-            <button class="btn danger" type="button" onclick="deleteItem('${i.id}')">Excluir</button>
-          </div>
-        </div>
-      `).join("");
       window._items = data.items;
+      applyPropertyFilters();
     }
 
-    function editItem(id) {
+    async function batchSetPublished(published){
+      const ids = Array.from(selectedPropertyIds);
+      if (!ids.length) return showToast("Selecione ao menos 1 imovel.", "info");
+      let okCount = 0;
+      for (const id of ids) {
+        const result = await api(`/api/properties/${id}/visibility`, {
+          method: "PATCH",
+          body: JSON.stringify({ is_published: !!published })
+        });
+        if (result.ok) okCount += 1;
+      }
+      showToast(`${okCount}/${ids.length} atualizados.`, okCount === ids.length ? "success" : "info");
+      selectedPropertyIds.clear();
+      await loadProperties();
+    }
+
+    async function batchDeleteProperties(){
+      const ids = Array.from(selectedPropertyIds);
+      if (!ids.length) return showToast("Selecione ao menos 1 imovel.", "info");
+      if (!confirm(`Excluir ${ids.length} imoveis selecionados?`)) return;
+      let okCount = 0;
+      for (const id of ids) {
+        const result = await api(`/api/properties/${id}`, { method: "DELETE" });
+        if (result.ok) okCount += 1;
+      }
+      showToast(`${okCount}/${ids.length} excluidos.`, okCount === ids.length ? "success" : "info");
+      selectedPropertyIds.clear();
+      await loadProperties();
+    }
+
+    async function editItem(id) {
       const i = (window._items || []).find((x) => x.id === id);
       if (!i) return;
+      setPanelTab("cadastro");
       const parsed = extractFeaturesFromDescription(i.description || "");
       selectedFeatures = new Set(parsed.features);
 
@@ -765,8 +1542,9 @@
       q("p-type").value = i.type || "Apartamento";
 
       const badgeOptions = Array.from(q("p-badge-select").options).map((o) => o.value);
-      if (badgeOptions.includes(i.badge || "")) {
-        q("p-badge-select").value = i.badge;
+      const normalizedBadge = normalizeBadge(i.badge || "");
+      if (badgeOptions.includes(normalizedBadge)) {
+        q("p-badge-select").value = normalizedBadge;
         q("p-badge-custom").value = "";
       } else {
         q("p-badge-select").value = "__CUSTOM__";
@@ -785,6 +1563,7 @@
       handleLocationMode();
 
       q("p-cep").value = i.cep || "";
+      lastCepLookup = "";
       q("cep-address").textContent = "";
       if (q("p-cep").value) lookupCepDetails();
       q("p-latitude").value = i.latitude ?? "";
@@ -805,6 +1584,7 @@
         el.checked = selectedFeatures.has(el.value);
       });
 
+      await loadPrivateData(i.id);
       renderPhotoPreview(Array.from(q("p-images").files || []));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -812,26 +1592,63 @@
     async function deleteItem(id) {
       if (!confirm("Excluir imovel?")) return;
       const data = await api(`/api/properties/${id}`, { method: "DELETE" });
-      if (!data.ok) return alert("Erro ao excluir");
+      if (!data.ok) {
+        showToast(data.message || "Erro ao excluir", "error");
+        return;
+      }
+      showToast("Imovel excluido com sucesso.", "success");
       await loadProperties();
     }
 
-    async function loadLeads() {
-      const data = await api("/api/admin/leads");
-      if (!data.ok) return;
-      q("leads").innerHTML = data.items.slice(0, 30).map((l) => `
+    function renderLeads(items){
+      q("leads").innerHTML = items.map((l) => `
         <div class="item">
           <strong>${l.name}</strong><br>
           ${l.phone}${l.email ? ` - ${l.email}` : ""}<br>
+          <small><strong>Data:</strong> ${formatDateTime(l.created_at)}</small><br>
           <small>${l.message}</small>
         </div>
       `).join("");
     }
 
+    function toDateInputValue(value){
+      const d = new Date(value || "");
+      if (!Number.isFinite(d.getTime())) return "";
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function applyLeadsFilters(){
+      const all = Array.isArray(window._leads) ? window._leads : [];
+      const term = normalizeText(q("leads-search")?.value || "");
+      const leadDate = q("leads-date")?.value || "";
+      const filtered = all.filter((l) => {
+        const haystack = normalizeText(`${l.name || ""} ${l.phone || ""} ${l.email || ""} ${l.message || ""}`);
+        const matchTerm = !term || haystack.includes(term);
+        const matchDate = !leadDate || toDateInputValue(l.created_at) === leadDate;
+        return matchTerm && matchDate;
+      });
+      renderLeads(filtered);
+      q("leads-filter-info").textContent = `${filtered.length} de ${all.length} exibidos`;
+    }
+
+    async function loadLeads() {
+      const data = await api("/api/admin/leads");
+      if (!data.ok) return;
+      window._leads = data.items;
+      q("leads-count").textContent = `${window._leads.length} leads`;
+      applyLeadsFilters();
+    }
+
     async function exportBackup() {
       const data = await api("/api/admin/backup/export");
-      if (!data.ok) return alert("Erro ao exportar");
-      alert(`Backup criado: ${data.file}`);
+      if (!data.ok) {
+        showToast(data.message || "Erro ao exportar", "error");
+        return;
+      }
+      showToast(`Backup criado: ${data.file}`, "success");
     }
 
     async function loadAll() {
@@ -847,8 +1664,32 @@
     q("p-badge-select").addEventListener("change", handleBadgeMode);
     q("p-location-select").addEventListener("change", handleLocationMode);
     q("p-title").addEventListener("input", syncCodeSuggestion);
+    q("p-description").addEventListener("keydown", (event) => {
+      if (!event.ctrlKey) return;
+      if (event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        applyDescriptionTool("bold");
+      }
+      if (event.key.toLowerCase() === "i") {
+        event.preventDefault();
+        applyDescriptionTool("italic");
+      }
+    });
+    q("p-description").addEventListener("paste", (event) => {
+      const html = event.clipboardData?.getData("text/html");
+      if (!html) return;
+      event.preventDefault();
+      const converted = convertRichHtmlToDescription(html);
+      replaceSelection(q("p-description"), converted);
+    });
+    q("p-description").addEventListener("blur", () => {
+      q("p-description").value = normalizeDescriptionStructure(q("p-description").value);
+    });
+    document.querySelectorAll(".desc-tool").forEach((btn) => {
+      btn.addEventListener("click", () => applyDescriptionTool(btn.dataset.descAction));
+    });
     q("p-type").addEventListener("change", () => {
-      if (q("p-type").value === "Lançamento") q("p-status").value = "Lançamento";
+      if (q("p-type").value === "LanÃ§amento") q("p-status").value = "LanÃ§amento";
       syncCodeSuggestion();
     });
     q("p-cep").addEventListener("input", () => {
@@ -874,24 +1715,68 @@
     q("p-images").addEventListener("change", async () => {
       const files = Array.from(q("p-images").files || []);
       const qualityCheck = await validateImageQuality(files);
-      if (!qualityCheck.ok) {
-        alert(qualityCheck.message);
-        q("p-images").value = "";
-        renderPhotoPreview([]);
-        return;
+      if ((qualityCheck.warnings || []).length) {
+        showToast(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`, "info", 5200);
       }
       renderPhotoPreview(files);
     });
+    q("feature-search").addEventListener("input", filterFeatureTags);
+    q("feature-check-visible").addEventListener("click", () => markVisibleFeatures(true));
+    q("feature-uncheck-visible").addEventListener("click", () => markVisibleFeatures(false));
+    q("list-search").addEventListener("input", () => { propertyPage = 1; applyPropertyFilters(); });
+    q("list-status").addEventListener("change", () => { propertyPage = 1; applyPropertyFilters(); });
+    q("list-date").addEventListener("change", () => {
+      propertySortKey = "created_at";
+      propertySortDir = q("list-date").value || "desc";
+      propertyPage = 1;
+      applyPropertyFilters();
+    });
+    q("list-page-size").addEventListener("change", () => {
+      propertyPageSize = Math.max(1, Number(q("list-page-size").value || 25));
+      propertyPage = 1;
+      renderPropertyList(filteredPropertyItems);
+    });
+    q("list-prev-page").addEventListener("click", () => {
+      propertyPage = Math.max(1, propertyPage - 1);
+      renderPropertyList(filteredPropertyItems);
+    });
+    q("list-next-page").addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil((filteredPropertyItems.length || 0) / propertyPageSize));
+      propertyPage = Math.min(totalPages, propertyPage + 1);
+      renderPropertyList(filteredPropertyItems);
+    });
+    q("list-batch-publish").addEventListener("click", () => batchSetPublished(true));
+    q("list-batch-hide").addEventListener("click", () => batchSetPublished(false));
+    q("list-batch-delete").addEventListener("click", batchDeleteProperties);
+    q("leads-search").addEventListener("input", applyLeadsFilters);
+    q("leads-date").addEventListener("change", applyLeadsFilters);
+    q("go-cadastro").addEventListener("click", () => setPanelTab("cadastro"));
+    q("go-imoveis").addEventListener("click", () => setPanelTab("imoveis"));
+    q("go-leads").addEventListener("click", () => setPanelTab("leads"));
+    q("list-new-property").addEventListener("click", () => {
+      clearForm();
+      setPanelTab("cadastro");
+      q("p-title").focus();
+    });
 
     renderFeatureTags();
+    filterFeatureTags();
     initCepMap();
     clearForm();
 
-    if (token) {
-      q("login-card").classList.add("hidden");
-      q("panel").classList.remove("hidden");
-      loadAll();
-    }
+    (async () => {
+      const session = await api("/api/auth/session");
+      if (session.ok) {
+        q("login-card").classList.add("hidden");
+        q("panel").classList.remove("hidden");
+        setPanelTab("imoveis");
+        await loadAll();
+      } else {
+        q("panel").classList.add("hidden");
+        q("login-card").classList.remove("hidden");
+      }
+    })();
   </script>
 </body>
 </html>
+
