@@ -4518,6 +4518,7 @@
             const quartos = document.getElementById("quartos").value;
             const objetivo = document.getElementById("objetivo")?.value || "Todos";
             const RENT_MAX_PRICE = 30000;
+            const selectedType = normalizeText(tipo);
 
             const classifyObjective = (property) => {
                 const text = normalizeText(property?.status || "");
@@ -4527,8 +4528,33 @@
                 return { isSold, isRental };
             };
 
+            const matchPropertyType = (propertyType) => {
+                if (selectedType === "todos") return true;
+                const current = normalizeText(propertyType || "");
+                if (!current) return false;
+                if (current === selectedType) return true;
+
+                // Compatibilidade para dados legados/importados.
+                if (selectedType === "terreno") {
+                    return current.includes("terreno") || current.includes("lote");
+                }
+                if (selectedType === "apartamento") {
+                    return current.includes("apartamento") || current.includes("apto");
+                }
+                if (selectedType === "casa") {
+                    return current.includes("casa") || current.includes("village");
+                }
+                if (selectedType === "comercial") {
+                    return current.includes("comercial") || current.includes("sala") || current.includes("loja");
+                }
+                if (selectedType === "lancamento") {
+                    return current.includes("lancamento");
+                }
+                return false;
+            };
+
             return properties.filter((property) => {
-                const matchTipo = tipo === "Todos" || property.type === tipo;
+                const matchTipo = matchPropertyType(property.type);
                 const matchLocal = !localizacao || property.location.toLowerCase().includes(localizacao.toLowerCase());
                 const matchPrecoMax = !precoMax || Number(property.price) <= precoMax;
                 const matchQuartos = quartos === "Qualquer"
