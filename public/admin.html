@@ -689,19 +689,9 @@
     }
 
     async function validateImageQuality(files){
-      if (!files.length) return { ok: true, warnings: [] };
-      const warnings = [];
-      for (const file of files) {
-        try {
-          const meta = await getImageMeta(file);
-          if (meta.width < IMAGE_RECOMMENDED_WIDTH || meta.height < IMAGE_RECOMMENDED_HEIGHT) {
-            warnings.push(`\"${file.name}\": ${meta.width}x${meta.height} (recomendado ${IMAGE_RECOMMENDED_WIDTH}x${IMAGE_RECOMMENDED_HEIGHT} ou maior).`);
-          }
-        } catch (_) {
-          warnings.push(`Nao foi possivel validar a resolucao de \"${file.name}\".`);
-        }
-      }
-      return { ok: true, warnings };
+      // Aceita qualquer imagem sem alertas de resolução.
+      void files;
+      return { ok: true, warnings: [] };
     }
 
     function initCepMap() {
