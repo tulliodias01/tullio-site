@@ -443,6 +443,7 @@
     let propertyPage = 1;
     let propertyPageSize = 25;
     let filteredPropertyItems = [];
+    let isSavingProperty = false;
     const selectedPropertyIds = new Set();
     const FEATURE_GROUPS = {
       "Internas e Acabamento": [
@@ -1235,73 +1236,106 @@
     }
 
     async function saveProperty() {
+      if (isSavingProperty) return;
+      isSavingProperty = true;
+      const saveBtn = q("save-btn");
+      const oldSaveLabel = saveBtn ? saveBtn.textContent : "";
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Salvando...";
+      }
+
       setFormMsg("");
       clearFieldErrors();
-      const id = q("p-id").value;
-      const files = Array.from(q("p-images").files || []);
-      const qualityCheck = await validateImageQuality(files);
-      if ((qualityCheck.warnings || []).length) {
-        setFormMsg(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`);
+      try {
+        const id = q("p-id").value;
+        const files = Array.from(q("p-images").files || []);
+        const qualityCheck = await validateImageQuality(files);
+        if ((qualityCheck.warnings || []).length) {
+          setFormMsg(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`);
+        }
+
+        const location = getLocationValue();
+        const badge = getBadgeValue();
+        const baseCode = (q("p-code").value.trim() || slugify(`${q("p-type").value}-${q("p-title").value}-${location}`) || "imovel").slice(0, 50);
+        const code = id ? baseCode : `${baseCode}-${Date.now().toString(36).slice(-4)}`;
+        const description = buildDescriptionWithFeatures(q("p-description").value);
+        const latitude = parseCoordinate(q("p-latitude").value);
+        const longitude = parseCoordinate(q("p-longitude").value);
+
+        const payload = {
+          code,
+          title: q("p-title").value.trim() || null,
+          type: q("p-type").value || null,
+          badge: badge || null,
+          location: location || null,
+          cep: normalizeCep(q("p-cep").value || "") || null,
+          latitude: Number.isFinite(latitude) ? latitude : null,
+          longitude: Number.isFinite(longitude) ? longitude : null,
+          bedrooms: q("p-bedrooms").value === "" ? null : Number(q("p-bedrooms").value || 0),
+          bathrooms: q("p-bathrooms").value === "" ? null : Number(q("p-bathrooms").value || 0),
+          area: q("p-area").value === "" ? null : Number(q("p-area").value || 0),
+          status: q("p-status").value || null,
+          price: q("p-price").value === "" ? null : Number(q("p-price").value || 0),
+          description,
+          is_published: q("p-published").value === "true"
+        };
+
+        const form = new FormData();
+        Object.entries(payload).forEach(([k, v]) => {
+          if (v === null || v === undefined) return;
+          form.append(k, String(v));
+        });
+        form.append("image_urls", JSON.stringify(currentImages));
+        files.forEach((f) => form.append("images", f));
+
+        const response = await fetch(id ? `/api/properties/${id}` : "/api/properties", {
+          method: id ? "PUT" : "POST",
+          credentials: "same-origin",
+          body: form
+        });
+        let data = {};
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = {};
+        }
+
+        if (!response.ok || !data.ok) {
+          showIssuesInline(data.issues, data.message || "Erro ao salvar imóvel. Verifique conexão e login.");
+          return;
+        }
+
+        const propertyId = data?.item?.id || id;
+        if (!propertyId) {
+          setFormMsg("Imóvel salvo sem retorno de ID. Tente recarregar a página.");
+          showToast("Falha ao confirmar cadastro salvo.", "error");
+          return;
+        }
+
+        const privateData = await api(`/api/admin/properties/${propertyId}/private`, {
+          method: "PUT",
+          body: JSON.stringify(privatePayload())
+        });
+        if (!privateData.ok) {
+          showIssuesInline(privateData.issues, privateData.message || "Imovel salvo, mas falhou ao salvar dados privados.");
+          return;
+        }
+
+        clearForm();
+        setFormMsg("Imovel salvo com sucesso.");
+        await loadProperties();
+      } catch (err) {
+        console.error("Falha inesperada ao salvar imóvel:", err);
+        setFormMsg("Falha ao salvar. Verifique sua conexão, faça login novamente e tente de novo.");
+        showToast("Falha ao salvar imóvel.", "error");
+      } finally {
+        isSavingProperty = false;
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = oldSaveLabel || "Salvar imovel";
+        }
       }
-
-      const location = getLocationValue();
-      const badge = getBadgeValue();
-      const baseCode = (q("p-code").value.trim() || slugify(`${q("p-type").value}-${q("p-title").value}-${location}`) || "imovel").slice(0, 50);
-      const code = id ? baseCode : `${baseCode}-${Date.now().toString(36).slice(-4)}`;
-      const description = buildDescriptionWithFeatures(q("p-description").value);
-      const latitude = parseCoordinate(q("p-latitude").value);
-      const longitude = parseCoordinate(q("p-longitude").value);
-
-      const payload = {
-        code,
-        title: q("p-title").value.trim() || null,
-        type: q("p-type").value || null,
-        badge: badge || null,
-        location: location || null,
-        cep: normalizeCep(q("p-cep").value || "") || null,
-        latitude: Number.isFinite(latitude) ? latitude : null,
-        longitude: Number.isFinite(longitude) ? longitude : null,
-        bedrooms: q("p-bedrooms").value === "" ? null : Number(q("p-bedrooms").value || 0),
-        bathrooms: q("p-bathrooms").value === "" ? null : Number(q("p-bathrooms").value || 0),
-        area: q("p-area").value === "" ? null : Number(q("p-area").value || 0),
-        status: q("p-status").value || null,
-        price: q("p-price").value === "" ? null : Number(q("p-price").value || 0),
-        description,
-        is_published: q("p-published").value === "true"
-      };
-
-      const form = new FormData();
-      Object.entries(payload).forEach(([k, v]) => {
-        if (v === null || v === undefined) return;
-        form.append(k, String(v));
-      });
-      form.append("image_urls", JSON.stringify(currentImages));
-      files.forEach((f) => form.append("images", f));
-
-      const data = await fetch(id ? `/api/properties/${id}` : "/api/properties", {
-        method: id ? "PUT" : "POST",
-        credentials: "same-origin",
-        body: form
-      }).then((r) => r.json());
-
-      if (!data.ok) {
-        showIssuesInline(data.issues, data.message || "Erro ao salvar.");
-        return;
-      }
-
-      const propertyId = data?.item?.id || id;
-      const privateData = await api(`/api/admin/properties/${propertyId}/private`, {
-        method: "PUT",
-        body: JSON.stringify(privatePayload())
-      });
-      if (!privateData.ok) {
-        showIssuesInline(privateData.issues, privateData.message || "Imovel salvo, mas falhou ao salvar dados privados.");
-        return;
-      }
-
-      clearForm();
-      setFormMsg("Imovel salvo com sucesso.");
-      await loadProperties();
     }
 
     function formatDateTime(value){
