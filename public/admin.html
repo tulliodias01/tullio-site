@@ -504,6 +504,48 @@
         "Ideal para temporada", "Alta rentabilidade Airbnb", "Gestao de locacao ativa"
       ]
     };
+    const FEATURE_GROUPS_BY_TYPE = {
+      "Apartamento": [
+        "Internas e Acabamento",
+        "Lazer e CondomÃ­nio",
+        "SeguranÃ§a e Acesso",
+        "Vagas e Mobilidade",
+        "LocalizaÃ§Ã£o e Perfil",
+        "Acessibilidade e Temporada"
+      ],
+      "Casa": [
+        "Internas e Acabamento",
+        "Lazer e CondomÃ­nio",
+        "SeguranÃ§a e Acesso",
+        "Vagas e Mobilidade",
+        "LocalizaÃ§Ã£o e Perfil",
+        "Terrenos e DocumentaÃ§Ã£o",
+        "Rural e Sustentabilidade",
+        "Acessibilidade e Temporada"
+      ],
+      "Comercial": [
+        "Comercial e Industrial",
+        "Internas e Acabamento",
+        "SeguranÃ§a e Acesso",
+        "Vagas e Mobilidade",
+        "LocalizaÃ§Ã£o e Perfil",
+        "Terrenos e DocumentaÃ§Ã£o"
+      ],
+      "Terreno": [
+        "Terrenos e DocumentaÃ§Ã£o",
+        "LocalizaÃ§Ã£o e Perfil",
+        "SeguranÃ§a e Acesso",
+        "Rural e Sustentabilidade"
+      ],
+      "LanÃ§amento": [
+        "Internas e Acabamento",
+        "Lazer e CondomÃ­nio",
+        "SeguranÃ§a e Acesso",
+        "Vagas e Mobilidade",
+        "LocalizaÃ§Ã£o e Perfil",
+        "Acessibilidade e Temporada"
+      ]
+    };
     const CEP_HINTS = {
       "Barra":"40140-110", "Ondina":"40170-010", "VitÃ³ria":"40080-010", "Pituba":"41830-530",
       "Itaigara":"41815-020", "Caminho das Ãrvores":"41820-021", "Horto Florestal":"40295-140",
@@ -816,14 +858,29 @@
       return null;
     }
 
-    function renderFeatureTags(){
-      q("feature-tags").innerHTML = Object.entries(FEATURE_GROUPS).map(([group, items]) => `
+    function getFeatureGroupsForType(typeValue){
+      const groupNames = FEATURE_GROUPS_BY_TYPE[typeValue];
+      if (!Array.isArray(groupNames) || !groupNames.length) return FEATURE_GROUPS;
+      const scoped = {};
+      groupNames.forEach((groupName) => {
+        if (Array.isArray(FEATURE_GROUPS[groupName])) scoped[groupName] = FEATURE_GROUPS[groupName];
+      });
+      return Object.keys(scoped).length ? scoped : FEATURE_GROUPS;
+    }
+
+    function getAllowedFeaturesForType(typeValue){
+      const groups = getFeatureGroupsForType(typeValue);
+      return new Set(Object.values(groups).flat().map((item) => String(item || "").trim()).filter(Boolean));
+    }
+
+    function renderFeatureTags(groups = FEATURE_GROUPS){
+      q("feature-tags").innerHTML = Object.entries(groups).map(([group, items]) => `
         <div class="feature-group">
           <h4>${group}</h4>
           <div class="tag-grid">
             ${items.map((label) => `
               <label class="tag" data-feature-label="${label}">
-                <input type="checkbox" value="${label}">
+                <input type="checkbox" value="${label}" ${selectedFeatures.has(label) ? "checked" : ""}>
                 <span>${label}</span>
               </label>
             `).join("")}
@@ -836,6 +893,17 @@
           else selectedFeatures.delete(el.value);
         });
       });
+    }
+
+    function applyFeatureGroupsByType(keepOutOfScope = false){
+      const typeValue = q("p-type").value || "Apartamento";
+      const groups = getFeatureGroupsForType(typeValue);
+      const allowed = getAllowedFeaturesForType(typeValue);
+      if (!keepOutOfScope) {
+        selectedFeatures = new Set([...selectedFeatures].filter((item) => allowed.has(item)));
+      }
+      renderFeatureTags(groups);
+      filterFeatureTags();
     }
 
     function filterFeatureTags(){
@@ -1309,7 +1377,7 @@
       q("pr-internal-notes").value = "";
       resetPhotoItems();
       selectedFeatures = new Set();
-      q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => { el.checked = false; });
+      applyFeatureGroupsByType();
       handleBadgeMode();
       renderPhotoPreview();
       setFormMsg("");
@@ -1699,6 +1767,7 @@
       q("p-code").value = i.code || "";
       q("p-title").value = i.title || "";
       q("p-type").value = i.type || "Apartamento";
+      applyFeatureGroupsByType(true);
 
       const badgeOptions = Array.from(q("p-badge-select").options).map((o) => o.value);
       const normalizedBadge = normalizeBadge(i.badge || "");
@@ -1738,10 +1807,6 @@
       q("p-description").value = parsed.clean || "";
       q("p-published").value = String(!!i.is_published);
       setPhotoItemsFromExisting((i.images || []).map((x) => x.url));
-
-      q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => {
-        el.checked = selectedFeatures.has(el.value);
-      });
 
       await loadPrivateData(i.id);
       renderPhotoPreview();
@@ -1849,6 +1914,7 @@
     });
     q("p-type").addEventListener("change", () => {
       if (q("p-type").value === "LanÃ§amento") q("p-status").value = "LanÃ§amento";
+      applyFeatureGroupsByType();
       syncCodeSuggestion();
     });
     q("p-cep").addEventListener("input", () => {
@@ -1918,8 +1984,7 @@
       q("p-title").focus();
     });
 
-    renderFeatureTags();
-    filterFeatureTags();
+    applyFeatureGroupsByType();
     initCepMap();
     clearForm();
 
