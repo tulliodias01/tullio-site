@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { query, pool } = require("../src/db");
 
 function isPlaceholder(url) {
@@ -5,6 +7,13 @@ function isPlaceholder(url) {
   const base = text.split("/").pop() || "";
   if (base === "02.png" || base === "03.jpg") return true;
   if (text.includes("logo_site") || text.includes("placeholder")) return true;
+  const ext = path.extname(base);
+  if (![".png", ".jpg", ".jpeg", ".webp"].includes(ext)) return false;
+  const localPath = path.resolve(process.cwd(), text.replace(/^\/+/, ""));
+  if (!fs.existsSync(localPath)) return false;
+  const size = fs.statSync(localPath).size;
+  // Ícones/logo/template da origem costumam vir muito pequenos.
+  if (size > 0 && size <= 22000) return true;
   return false;
 }
 
