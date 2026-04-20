@@ -12,7 +12,8 @@
     "backup": "node scripts/backup.js",
     "geocode:cep": "node scripts/geocode_by_cep.js",
     "fix:descricao-interna": "node scripts/fix_description_internal_notes.js",
-    "fix:obs-interna": "node scripts/cleanup_internal_notes.js"
+    "fix:obs-interna": "node scripts/cleanup_internal_notes.js",
+    "import:launches": "node scripts/import_launches_imobssa.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
