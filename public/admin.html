@@ -187,7 +187,7 @@
               <option>Casa</option>
               <option>Comercial</option>
               <option>Terreno</option>
-              <option value="LanÃ§amento">LanÃ§amento</option>
+              <option value="Lançamento">Lançamento</option>
             </select>
           </div>
         </div>
@@ -213,12 +213,12 @@
               <optgroup label="Salvador">
                 <option value="Barra">Barra</option>
                 <option value="Ondina">Ondina</option>
-                <option value="VitÃ³ria">VitÃ³ria</option>
+                <option value="Vitória">Vitória</option>
                 <option value="Pituba">Pituba</option>
                 <option value="Itaigara">Itaigara</option>
-                <option value="Caminho das Ãrvores">Caminho das Ãrvores</option>
+                <option value="Caminho das Árvores">Caminho das Árvores</option>
                 <option value="Horto Florestal">Horto Florestal</option>
-                <option value="GraÃ§a">GraÃ§a</option>
+                <option value="Graça">Graça</option>
                 <option value="Rio Vermelho">Rio Vermelho</option>
                 <option value="Patamares">Patamares</option>
                 <option value="Stella Maris">Stella Maris</option>
@@ -227,11 +227,11 @@
               </optgroup>
               <optgroup label="Lauro de Freitas">
                 <option value="Buraquinho">Buraquinho</option>
-                <option value="Vilas do AtlÃ¢ntico">Vilas do AtlÃ¢ntico</option>
+                <option value="Vilas do Atlântico">Vilas do Atlântico</option>
                 <option value="Ipitanga">Ipitanga</option>
                 <option value="Pitangueiras">Pitangueiras</option>
                 <option value="Centro - Lauro de Freitas">Centro - Lauro de Freitas</option>
-                <option value="PortÃ£o">PortÃ£o</option>
+                <option value="Portão">Portão</option>
                 <option value="Caji">Caji</option>
               </optgroup>
               <option value="__CUSTOM__">Outro bairro/localizacao</option>
@@ -253,7 +253,7 @@
         <div class="row">
           <div><label>Quartos</label><input id="p-bedrooms" type="number" min="0" value="0"></div>
           <div><label>Banheiros</label><input id="p-bathrooms" type="number" min="0" value="0"></div>
-          <div><label>Area (mÂ²)</label><input id="p-area" type="number" min="1"></div>
+          <div><label>Area (m²)</label><input id="p-area" type="number" min="1"></div>
         </div>
 
         <div class="row">
@@ -266,8 +266,8 @@
             <input id="p-longitude" type="number" step="0.0000001" placeholder="-38.5011000">
           </div>
           <div>
-            <label>Apoio rÃ¡pido</label>
-            <button class="btn alt" id="map-open-btn" type="button">Abrir Google Maps da regiÃ£o</button>
+            <label>Apoio rápido</label>
+            <button class="btn alt" id="map-open-btn" type="button">Abrir Google Maps da região</button>
             <div class="hint">Copie as coordenadas do Maps e cole aqui.</div>
           </div>
         </div>
@@ -277,7 +277,7 @@
             <label>Status</label>
             <select id="p-status">
               <option>Pronto</option>
-              <option>LanÃ§amento</option>
+              <option>Lançamento</option>
               <option>Em obra</option>
               <option>Reservado</option>
               <option>Vendido</option>
@@ -463,14 +463,14 @@
         "Cozinha americana", "Cozinha ampla", "Area de servico", "Despensa", "Deposito privativo",
         "Entrada de servico", "Banheiro de servico"
       ],
-      "Lazer e CondomÃ­nio": [
+      "Lazer e Condomínio": [
         "Piscina", "Piscina aquecida", "Piscina infantil", "Deck", "Academia", "Espaco gourmet",
         "Churrasqueira", "Forno de pizza", "Salao de festas", "Salao de jogos", "Brinquedoteca",
         "Playground", "Quadra poliesportiva", "Quadra de tenis", "Campo de futebol",
         "Espaco pet", "Pet friendly", "Bicicletario", "Coworking", "Cinema", "Spa", "Sauna",
         "Hidromassagem", "Rooftop"
       ],
-      "SeguranÃ§a e Acesso": [
+      "Segurança e Acesso": [
         "Condominio fechado", "Portaria 24h", "Portaria remota", "Guarita", "Interfone",
         "Acesso por biometria", "Controle de acesso", "Seguranca 24h", "Monitoramento por cameras",
         "Gerador", "Elevador", "Elevador de servico"
@@ -479,7 +479,7 @@
         "1 vaga", "2 vagas", "3 vagas", "4+ vagas", "Vaga coberta", "Vaga para visitante",
         "Vaga presa", "Vaga livre"
       ],
-      "LocalizaÃ§Ã£o e Perfil": [
+      "Localização e Perfil": [
         "Proximo ao metro", "Proximo a praia", "Pe na areia", "Vista para lagoa", "Beira rio",
         "Proximo a shopping", "Proximo a escola", "Proximo a hospital", "Proximo a mercado",
         "Rua tranquila", "Alto padrao", "Pronto para morar", "Reformado", "Recem reformado",
@@ -490,7 +490,7 @@
         "Piso elevado", "Forro modular", "Vao livre", "Doca", "Patio de manobra",
         "Energia trifasica"
       ],
-      "Terrenos e DocumentaÃ§Ã£o": [
+      "Terrenos e Documentação": [
         "Terreno plano", "Terreno de esquina", "Frente nascente", "Frente para avenida",
         "Lote em condominio", "Potencial construtivo", "Aceita financiamento", "Escriturado",
         "Documentacao regular", "IPTU em dia", "Aceita permuta"
@@ -507,52 +507,52 @@
     const FEATURE_GROUPS_BY_TYPE = {
       "Apartamento": [
         "Internas e Acabamento",
-        "Lazer e CondomÃ­nio",
-        "SeguranÃ§a e Acesso",
+        "Lazer e Condomínio",
+        "Segurança e Acesso",
         "Vagas e Mobilidade",
-        "LocalizaÃ§Ã£o e Perfil",
+        "Localização e Perfil",
         "Acessibilidade e Temporada"
       ],
       "Casa": [
         "Internas e Acabamento",
-        "Lazer e CondomÃ­nio",
-        "SeguranÃ§a e Acesso",
+        "Lazer e Condomínio",
+        "Segurança e Acesso",
         "Vagas e Mobilidade",
-        "LocalizaÃ§Ã£o e Perfil",
-        "Terrenos e DocumentaÃ§Ã£o",
+        "Localização e Perfil",
+        "Terrenos e Documentação",
         "Rural e Sustentabilidade",
         "Acessibilidade e Temporada"
       ],
       "Comercial": [
         "Comercial e Industrial",
         "Internas e Acabamento",
-        "SeguranÃ§a e Acesso",
+        "Segurança e Acesso",
         "Vagas e Mobilidade",
-        "LocalizaÃ§Ã£o e Perfil",
-        "Terrenos e DocumentaÃ§Ã£o"
+        "Localização e Perfil",
+        "Terrenos e Documentação"
       ],
       "Terreno": [
-        "Terrenos e DocumentaÃ§Ã£o",
-        "LocalizaÃ§Ã£o e Perfil",
-        "SeguranÃ§a e Acesso",
+        "Terrenos e Documentação",
+        "Localização e Perfil",
+        "Segurança e Acesso",
         "Rural e Sustentabilidade"
       ],
-      "LanÃ§amento": [
+      "Lançamento": [
         "Internas e Acabamento",
-        "Lazer e CondomÃ­nio",
-        "SeguranÃ§a e Acesso",
+        "Lazer e Condomínio",
+        "Segurança e Acesso",
         "Vagas e Mobilidade",
-        "LocalizaÃ§Ã£o e Perfil",
+        "Localização e Perfil",
         "Acessibilidade e Temporada"
       ]
     };
     const CEP_HINTS = {
-      "Barra":"40140-110", "Ondina":"40170-010", "VitÃ³ria":"40080-010", "Pituba":"41830-530",
-      "Itaigara":"41815-020", "Caminho das Ãrvores":"41820-021", "Horto Florestal":"40295-140",
-      "GraÃ§a":"40150-090", "Rio Vermelho":"41940-100", "Patamares":"41680-110",
+      "Barra":"40140-110", "Ondina":"40170-010", "Vitória":"40080-010", "Pituba":"41830-530",
+      "Itaigara":"41815-020", "Caminho das Árvores":"41820-021", "Horto Florestal":"40295-140",
+      "Graça":"40150-090", "Rio Vermelho":"41940-100", "Patamares":"41680-110",
       "Stella Maris":"41600-500", "Alphaville":"41730-101", "Centro":"40020-000",
-      "Buraquinho":"42710-400", "Vilas do AtlÃ¢ntico":"42707-130", "Ipitanga":"42700-170",
-      "Pitangueiras":"42700-000", "Centro - Lauro de Freitas":"42702-000", "PortÃ£o":"42700-000", "Caji":"42700-000"
+      "Buraquinho":"42710-400", "Vilas do Atlântico":"42707-130", "Ipitanga":"42700-170",
+      "Pitangueiras":"42700-000", "Centro - Lauro de Freitas":"42702-000", "Portão":"42700-000", "Caji":"42700-000"
     };
 
     const IMAGE_RECOMMENDED_WIDTH = 1400;
@@ -930,7 +930,7 @@
 
     function extractFeaturesFromDescription(desc){
       const text = String(desc || "").replace(/\r\n/g, "\n");
-      const m = text.match(/(?:^|\n)\s*Caracter(?:i|Ã­)sticas:\s*([\s\S]*)$/im);
+      const m = text.match(/(?:^|\n)\s*Caracter(?:i|í)sticas:\s*([\s\S]*)$/im);
       if (!m) return { clean: text.trim(), features: [] };
 
       const rawList = String(m[1] || "").trim();
@@ -1009,7 +1009,7 @@
       const clean = normalizeDescriptionStructure(baseText);
       const features = uniqueFeatures([...selectedFeatures]);
       if (!features.length) return clean;
-      const suffix = `CaracterÃ­sticas:\n${features.map((item) => `- ${item}`).join("\n")}`;
+      const suffix = `Características:\n${features.map((item) => `- ${item}`).join("\n")}`;
       return clean ? `${clean}\n\n${suffix}` : suffix;
     }
 
@@ -1913,7 +1913,7 @@
       btn.addEventListener("click", () => applyDescriptionTool(btn.dataset.descAction));
     });
     q("p-type").addEventListener("change", () => {
-      if (q("p-type").value === "LanÃ§amento") q("p-status").value = "LanÃ§amento";
+      if (q("p-type").value === "Lançamento") q("p-status").value = "Lançamento";
       applyFeatureGroupsByType();
       syncCodeSuggestion();
     });
