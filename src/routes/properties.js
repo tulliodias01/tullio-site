@@ -272,8 +272,15 @@ router.post("/", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => 
     await savePropertyVersion(property.id, req.user.sub, { action: "create", property });
     return res.status(201).json({ ok: true, item: dbToProperty(property) });
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Erro ao criar imovel:", err);
     if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
-    return res.status(500).json({ ok: false, message: "Erro ao criar imovel." });
+    if (String(err?.code || "") === "ENOSPC") {
+      return res.status(507).json({ ok: false, message: "Sem espaco em disco para upload de imagens." });
+    }
+    const code = String(err?.code || "SEM_COD");
+    const detail = String(err?.detail || "").trim();
+    return res.status(500).json({ ok: false, message: `Erro ao criar imovel [${code}]${detail ? `: ${detail}` : ""}` });
   }
 });
 
@@ -356,7 +363,9 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
     if (String(err?.code || "") === "ENOSPC") {
       return res.status(507).json({ ok: false, message: "Sem espaco em disco para upload de imagens. Reduza quantidade/tamanho ou libere espaco." });
     }
-    return res.status(500).json({ ok: false, message: "Erro ao atualizar imovel." });
+    const code = String(err?.code || "SEM_COD");
+    const detail = String(err?.detail || "").trim();
+    return res.status(500).json({ ok: false, message: `Erro ao atualizar imovel [${code}]${detail ? `: ${detail}` : ""}` });
   }
 });
 
