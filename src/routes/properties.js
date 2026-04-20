@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+const MAX_IMAGES_UPLOAD = 100;
 
 const propertySchema = z.object({
   code: z.string().optional().nullable(),
@@ -207,7 +208,7 @@ router.get("/", async (_req, res) => {
   res.json({ ok: true, items });
 });
 
-router.post("/", upload.array("images", 20), async (req, res) => {
+router.post("/", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => {
   try {
     const parsed = propertySchema.parse({
       ...req.body,
@@ -277,7 +278,7 @@ router.patch("/:id/visibility", async (req, res) => {
   }
 });
 
-router.put("/:id", upload.array("images", 20), async (req, res) => {
+router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => {
   try {
     const current = await query("select * from properties where id = $1 limit 1", [req.params.id]);
     if (!current.rows.length) return res.status(404).json({ ok: false, message: "Imovel nao encontrado." });
