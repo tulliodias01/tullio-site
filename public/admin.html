@@ -1303,14 +1303,25 @@
           body: form
         });
         let data = {};
+        let rawText = "";
         try {
           data = await response.json();
         } catch (_) {
+          try {
+            rawText = await response.text();
+          } catch (_) {
+            rawText = "";
+          }
           data = {};
         }
 
         if (!response.ok || !data.ok) {
-          showIssuesInline(data.issues, data.message || "Erro ao salvar imóvel. Verifique conexão e login.");
+          const detail = String(data.message || rawText || "").trim();
+          const message = detail
+            ? `${detail} (HTTP ${response.status})`
+            : `Erro ao salvar imóvel. Verifique conexão/login. (HTTP ${response.status})`;
+          showIssuesInline(data.issues, message);
+          showToast(message, "error", 6500);
           return;
         }
 
