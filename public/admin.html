@@ -108,9 +108,12 @@
     .status.on{background:#e8f7ef;border-color:#b8e3cb;color:#16673a}
     .status.off{background:#fff1f1;border-color:#f0c2c2;color:#9d1f1f}
     .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}
-    .photo{position:relative;border-radius:10px;overflow:hidden;border:1px solid #d6e0ea;background:#edf3f9;height:74px}
+    .photo{position:relative;border-radius:10px;overflow:hidden;border:1px solid #d6e0ea;background:#edf3f9;height:108px}
     .photo img{width:100%;height:100%;object-fit:cover;display:block}
     .photo .cap{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.66rem;border-radius:999px;padding:2px 6px}
+    .photo .photo-tools{position:absolute;top:6px;right:6px;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:86px}
+    .photo .photo-tools button{border:1px solid rgba(255,255,255,.75);background:rgba(8,18,32,.72);color:#fff;border-radius:6px;padding:2px 6px;font-size:.65rem;cursor:pointer;line-height:1.2}
+    .photo .photo-tools button:hover{background:rgba(8,18,32,.92)}
     .login-msg{font-size:.9rem;color:var(--danger);min-height:1.2rem}
     .ok-msg{font-size:.85rem;color:var(--ok)}
     .toast-wrap{position:fixed;top:18px;right:18px;z-index:9999;display:grid;gap:8px;max-width:360px}
@@ -429,8 +432,9 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqlPOcPH8zOI2TiwZdwRs_KJUePHrtFEo&language=pt-BR&region=BR"></script>
   <script>
     let currentImages = [];
+    let photoItems = [];
+    let nextPhotoItemId = 1;
     let selectedFeatures = new Set();
-    let tempPreviewUrls = [];
     let cepLookupTimer = null;
     let lastCepLookup = "";
     let cepLookupSeq = 0;
@@ -1120,20 +1124,85 @@
       }
     }
 
-    function renderPhotoPreview(files = []){
-      tempPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-      tempPreviewUrls = [];
+    function buildPhotoItem(kind, payload) {
+      const base = { id: String(nextPhotoItemId++), kind };
+      if (kind === "existing") return { ...base, src: String(payload || "") };
+      const file = payload;
+      const previewUrl = URL.createObjectURL(file);
+      return { ...base, file, src: previewUrl };
+    }
 
-      const existing = (currentImages || []).map((src, idx) => ({ src, cap: idx === 0 ? "Capa atual" : "Foto atual" }));
-      const local = files.map((f, idx) => {
-        const url = URL.createObjectURL(f);
-        tempPreviewUrls.push(url);
-        return { src: url, cap: idx === 0 && !existing.length ? "Nova capa" : "Nova foto" };
-      });
-      const all = [...existing, ...local];
-      q("p-photo-preview").innerHTML = all.map((img) => `
-        <div class="photo"><img src="${img.src}" alt="Preview"><span class="cap">${img.cap}</span></div>
-      `).join("");
+    function revokePhotoItem(item) {
+      if (!item) return;
+      if (item.kind === "local" && item.src) URL.revokeObjectURL(item.src);
+    }
+
+    function resetPhotoItems() {
+      photoItems.forEach(revokePhotoItem);
+      photoItems = [];
+      currentImages = [];
+      q("p-images").value = "";
+    }
+
+    function setPhotoItemsFromExisting(urls = []) {
+      resetPhotoItems();
+      photoItems = (urls || [])
+        .map((src) => String(src || "").trim())
+        .filter(Boolean)
+        .map((src) => buildPhotoItem("existing", src));
+      currentImages = photoItems.filter((item) => item.kind === "existing").map((item) => item.src);
+      renderPhotoPreview();
+    }
+
+    function appendLocalPhotoFiles(files = []) {
+      const list = Array.from(files || []);
+      if (!list.length) return;
+      const next = list.map((file) => buildPhotoItem("local", file));
+      photoItems = [...photoItems, ...next];
+      renderPhotoPreview();
+      q("p-images").value = "";
+    }
+
+    function movePhotoItem(fromIndex, toIndex) {
+      if (fromIndex < 0 || fromIndex >= photoItems.length) return;
+      if (toIndex < 0 || toIndex >= photoItems.length) return;
+      if (fromIndex === toIndex) return;
+      const next = [...photoItems];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      photoItems = next;
+      renderPhotoPreview();
+    }
+
+    function setPhotoAsCover(index) {
+      if (index <= 0 || index >= photoItems.length) return;
+      movePhotoItem(index, 0);
+    }
+
+    function removePhotoItem(index) {
+      if (index < 0 || index >= photoItems.length) return;
+      const [item] = photoItems.splice(index, 1);
+      revokePhotoItem(item);
+      renderPhotoPreview();
+    }
+
+    function renderPhotoPreview(){
+      currentImages = photoItems.filter((item) => item.kind === "existing").map((item) => item.src);
+      q("p-photo-preview").innerHTML = photoItems.map((item, idx) => {
+        const cap = idx === 0 ? "Capa" : (item.kind === "existing" ? "Foto atual" : "Nova foto");
+        return `
+          <div class="photo">
+            <img src="${item.src}" alt="Preview">
+            <span class="cap">${cap}</span>
+            <div class="photo-tools">
+              <button type="button" onclick="movePhotoItem(${idx}, ${idx - 1})" ${idx === 0 ? "disabled" : ""}>↑</button>
+              <button type="button" onclick="movePhotoItem(${idx}, ${idx + 1})" ${idx === photoItems.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" onclick="setPhotoAsCover(${idx})" ${idx === 0 ? "disabled" : ""}>Capa</button>
+              <button type="button" onclick="removePhotoItem(${idx})">X</button>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     async function login() {
@@ -1191,11 +1260,11 @@
       q("pr-commission-rent").value = "";
       q("pr-keys-location").value = "";
       q("pr-internal-notes").value = "";
-      currentImages = [];
+      resetPhotoItems();
       selectedFeatures = new Set();
       q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => { el.checked = false; });
       handleBadgeMode();
-      renderPhotoPreview([]);
+      renderPhotoPreview();
       setFormMsg("");
     }
 
@@ -1257,7 +1326,7 @@
       clearFieldErrors();
       try {
         const id = q("p-id").value;
-        const files = Array.from(q("p-images").files || []);
+        const files = photoItems.filter((item) => item.kind === "local").map((item) => item.file);
         const qualityCheck = await validateImageQuality(files);
         if ((qualityCheck.warnings || []).length) {
           setFormMsg(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`);
@@ -1621,14 +1690,14 @@
       q("p-price").value = i.price || 0;
       q("p-description").value = parsed.clean || "";
       q("p-published").value = String(!!i.is_published);
-      currentImages = (i.images || []).map((x) => x.url);
+      setPhotoItemsFromExisting((i.images || []).map((x) => x.url));
 
       q("feature-tags").querySelectorAll("input[type='checkbox']").forEach((el) => {
         el.checked = selectedFeatures.has(el.value);
       });
 
       await loadPrivateData(i.id);
-      renderPhotoPreview(Array.from(q("p-images").files || []));
+      renderPhotoPreview();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -1761,7 +1830,7 @@
       if ((qualityCheck.warnings || []).length) {
         showToast(`Aviso de qualidade: ${qualityCheck.warnings.join(" | ")}`, "info", 5200);
       }
-      renderPhotoPreview(files);
+      appendLocalPhotoFiles(files);
     });
     q("feature-search").addEventListener("input", filterFeatureTags);
     q("feature-check-visible").addEventListener("click", () => markVisibleFeatures(true));
