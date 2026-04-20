@@ -108,7 +108,9 @@
     .status.on{background:#e8f7ef;border-color:#b8e3cb;color:#16673a}
     .status.off{background:#fff1f1;border-color:#f0c2c2;color:#9d1f1f}
     .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}
-    .photo{position:relative;border-radius:10px;overflow:hidden;border:1px solid #d6e0ea;background:#edf3f9;height:108px}
+    .photo{position:relative;border-radius:10px;overflow:hidden;border:1px solid #d6e0ea;background:#edf3f9;height:108px;cursor:grab}
+    .photo.dragging{opacity:.55;cursor:grabbing}
+    .photo.drag-over{outline:2px dashed #2b4f80;outline-offset:-2px}
     .photo img{width:100%;height:100%;object-fit:cover;display:block}
     .photo .cap{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.66rem;border-radius:999px;padding:2px 6px}
     .photo .photo-tools{position:absolute;top:6px;right:6px;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:86px}
@@ -434,6 +436,7 @@
     let currentImages = [];
     let photoItems = [];
     let nextPhotoItemId = 1;
+    let photoDragIndex = -1;
     let selectedFeatures = new Set();
     let cepLookupTimer = null;
     let lastCepLookup = "";
@@ -1174,6 +1177,44 @@
       renderPhotoPreview();
     }
 
+    function onPhotoDragStart(index, event) {
+      photoDragIndex = Number(index);
+      if (!event?.dataTransfer) return;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(index));
+    }
+
+    function onPhotoDragOver(index, event) {
+      if (!event) return;
+      event.preventDefault();
+      if (Number(index) === photoDragIndex) return;
+      event.currentTarget?.classList.add("drag-over");
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    }
+
+    function onPhotoDragLeave(event) {
+      event.currentTarget?.classList.remove("drag-over");
+    }
+
+    function onPhotoDrop(index, event) {
+      if (!event) return;
+      event.preventDefault();
+      event.currentTarget?.classList.remove("drag-over");
+      const toIndex = Number(index);
+      const fromIndex = Number(photoDragIndex);
+      photoDragIndex = -1;
+      if (!Number.isInteger(fromIndex) || fromIndex < 0) return;
+      if (!Number.isInteger(toIndex) || toIndex < 0) return;
+      if (fromIndex === toIndex) return;
+      movePhotoItem(fromIndex, toIndex);
+    }
+
+    function onPhotoDragEnd(event) {
+      photoDragIndex = -1;
+      event.currentTarget?.classList.remove("drag-over");
+      document.querySelectorAll("#p-photo-preview .photo.drag-over").forEach((el) => el.classList.remove("drag-over"));
+    }
+
     function setPhotoAsCover(index) {
       if (index <= 0 || index >= photoItems.length) return;
       movePhotoItem(index, 0);
@@ -1191,7 +1232,13 @@
       q("p-photo-preview").innerHTML = photoItems.map((item, idx) => {
         const cap = idx === 0 ? "Capa" : (item.kind === "existing" ? "Foto atual" : "Nova foto");
         return `
-          <div class="photo">
+          <div class="photo"
+               draggable="true"
+               ondragstart="onPhotoDragStart(${idx}, event)"
+               ondragover="onPhotoDragOver(${idx}, event)"
+               ondragleave="onPhotoDragLeave(event)"
+               ondrop="onPhotoDrop(${idx}, event)"
+               ondragend="onPhotoDragEnd(event)">
             <img src="${item.src}" alt="Preview">
             <span class="cap">${cap}</span>
             <div class="photo-tools">
