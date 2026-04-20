@@ -37,6 +37,21 @@ function parsePriceBRL(raw) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function normalizeDescription(text) {
+  return String(text || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/^\s*[•●▪◦]\s+/gm, "- ")
+    .replace(/\s*[|]\s*/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function loadInputJson(inputFile) {
   const raw = fs.readFileSync(inputFile, "utf8");
   const parsed = JSON.parse(raw);
@@ -91,8 +106,10 @@ async function upsertLaunch(item, options) {
   if (!externalId) throw new Error("Item sem external_id.");
 
   const title = String(item.titulo || "").trim() || `Lançamento ${externalId.slice(0, 8)}`;
-  const location = String(item.bairro_localizacao || "").trim() || "Salvador";
-  const description = String(item.descricao || "").trim() || "Lançamento disponível. Consulte detalhes.";
+  const titleLower = title.toLowerCase();
+  const rawLocation = String(item.bairro_localizacao || "").trim();
+  const location = titleLower.includes("viv rio vermelho") ? "Rio Vermelho" : (rawLocation || "Salvador");
+  const description = normalizeDescription(item.descricao) || "Lançamento disponível. Consulte detalhes.";
   const price = parsePriceBRL(item.preco);
   const code = buildCode(externalId);
   const baseSlug = slugify(`${title}-${externalId.slice(0, 8)}`) || slugify(title) || code.toLowerCase();
