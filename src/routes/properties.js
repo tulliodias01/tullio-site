@@ -192,10 +192,22 @@ async function loadPropertyImages(propertyIds) {
 }
 
 async function savePropertyVersion(propertyId, changedBy, payload) {
-  await query(
-    "insert into property_versions (property_id, changed_by, payload) values ($1, $2, $3::jsonb)",
-    [propertyId, changedBy || null, JSON.stringify(payload)]
-  );
+  try {
+    await query(
+      "insert into property_versions (property_id, changed_by, payload) values ($1, $2, $3::jsonb)",
+      [propertyId, changedBy || null, JSON.stringify(payload)]
+    );
+  } catch (err) {
+    // Se o usuario do token nao existir mais na tabela admin_users, nao bloqueia o cadastro/edicao.
+    if (String(err?.code || "") === "23503") {
+      await query(
+        "insert into property_versions (property_id, changed_by, payload) values ($1, $2, $3::jsonb)",
+        [propertyId, null, JSON.stringify(payload)]
+      );
+      return;
+    }
+    throw err;
+  }
 }
 
 async function ensureUniqueSlugForUpdate(baseSlug, currentId) {
