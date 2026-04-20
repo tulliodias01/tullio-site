@@ -3519,6 +3519,7 @@
         function normalizeProperty(raw) {
             const title = String(raw?.title || "").trim();
             const code = String(raw?.code || "").trim();
+            const slug = String(raw?.slug || "").trim();
             const lat = Number(raw?.latitude);
             const lng = Number(raw?.longitude);
             const imagesRaw = Array.isArray(raw?.images) ? raw.images : [];
@@ -3529,6 +3530,7 @@
             }).filter(Boolean));
             return {
                 id: String(raw?.id || slugify(title) || `p_${Date.now()}`),
+                slug,
                 code,
                 title,
                 type: String(raw?.type || "Apartamento"),
@@ -3751,18 +3753,40 @@
         }
 
         function findPropertyByRef(ref) {
-            const token = String(ref || "").trim().toLowerCase();
-            if (!token) return null;
+            const tokenRaw = String(ref || "").trim();
+            if (!tokenRaw) return null;
+            const safeDecode = (value) => {
+                try {
+                    return decodeURIComponent(value);
+                } catch (_) {
+                    return value;
+                }
+            };
+            const tokenDecoded = safeDecode(tokenRaw).trim();
+            const token = tokenDecoded.toLowerCase();
+            const normalizedNoHash = token.replace(/^#/, "");
+            const tdMatch = normalizedNoHash.match(/^td\s*0*(\d{1,4})$/i);
+            const variants = new Set([token, normalizedNoHash]);
+            if (tdMatch) {
+                const n = Number(tdMatch[1]);
+                if (Number.isFinite(n) && n > 0) {
+                    variants.add(formatTdCode(n).toLowerCase());
+                }
+            }
+
             return properties.find((property) => {
                 const code = String(property.code || "").toLowerCase();
+                const codeNoHash = code.replace(/^#/, "");
                 const id = String(property.id || "").toLowerCase();
-                return code === token || id === token;
+                const slug = String(property.slug || "").toLowerCase();
+                return variants.has(code) || variants.has(codeNoHash) || variants.has(id) || variants.has(slug);
             }) || null;
         }
 
         function buildPropertyLink(property) {
             const url = new URL(window.location.href);
-            url.searchParams.set("imovel", property?.code || property?.id || "");
+            // Prioriza slug para links estaveis; mantem compatibilidade com codigo/id.
+            url.searchParams.set("imovel", property?.slug || property?.code || property?.id || "");
             url.hash = "";
             return url.toString();
         }
