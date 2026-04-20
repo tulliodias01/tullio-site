@@ -289,6 +289,25 @@
             <select id="p-published"><option value="true">Sim</option><option value="false">Nao</option></select>
           </div>
         </div>
+        <div class="row">
+          <div>
+            <label>Destaque na Home?</label>
+            <select id="p-home-featured">
+              <option value="false">Nao</option>
+              <option value="true">Sim</option>
+            </select>
+          </div>
+          <div>
+            <label>Ordem do Destaque (1 a 3)</label>
+            <select id="p-home-featured-order">
+              <option value="">Automatica</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div class="hint" style="align-self:end">A Home exibe ate 3 imoveis. Defina ordem para controlar quais aparecem primeiro.</div>
+        </div>
 
         <div class="card" style="padding:12px;margin:12px 0">
           <h3 style="margin-bottom:8px">Caracteristicas prontas</h3>
@@ -619,6 +638,8 @@
         price: "p-price",
         description: "p-description",
         is_published: "p-published",
+        home_featured: "p-home-featured",
+        home_featured_order: "p-home-featured-order",
         owner_name: "pr-owner-name",
         owner_phone: "pr-owner-phone",
         owner_email: "pr-owner-email",
@@ -650,6 +671,8 @@
         price: "Preco",
         description: "Descricao",
         is_published: "Publicacao",
+        home_featured: "Destaque na Home",
+        home_featured_order: "Ordem do destaque",
         owner_name: "Proprietario(a)",
         owner_phone: "Telefone do proprietario",
         owner_email: "Email do proprietario",
@@ -1153,6 +1176,12 @@
       q("p-badge-custom").classList.toggle("hidden", !isCustom);
     }
 
+    function syncHomeFeaturedFields() {
+      const featured = q("p-home-featured").value === "true";
+      q("p-home-featured-order").disabled = !featured;
+      if (!featured) q("p-home-featured-order").value = "";
+    }
+
     function handleLocationMode(){
       const selected = q("p-location-select").value;
       const isCustom = selected === "__CUSTOM__";
@@ -1404,6 +1433,8 @@
       q("p-price").value = "";
       q("p-description").value = "";
       q("p-published").value = "true";
+      q("p-home-featured").value = "false";
+      q("p-home-featured-order").value = "";
       q("p-images").value = "";
       q("pr-owner-name").value = "";
       q("pr-owner-phone").value = "";
@@ -1419,6 +1450,7 @@
       selectedFeatures = new Set();
       applyFeatureGroupsByType();
       handleBadgeMode();
+      syncHomeFeaturedFields();
       renderPhotoPreview();
       setFormMsg("");
     }
@@ -1510,7 +1542,11 @@
           status: q("p-status").value || null,
           price: q("p-price").value === "" ? null : Number(q("p-price").value || 0),
           description,
-          is_published: q("p-published").value === "true"
+          is_published: q("p-published").value === "true",
+          home_featured: q("p-home-featured").value === "true",
+          home_featured_order: q("p-home-featured").value === "true"
+            ? (q("p-home-featured-order").value || null)
+            : null
         };
 
         const form = new FormData();
@@ -1847,6 +1883,9 @@
       q("p-price").value = i.price || 0;
       q("p-description").value = parsed.clean || "";
       q("p-published").value = String(!!i.is_published);
+      q("p-home-featured").value = String(!!i.home_featured);
+      q("p-home-featured-order").value = i.home_featured_order ? String(i.home_featured_order) : "";
+      syncHomeFeaturedFields();
       setPhotoItemsFromExisting((i.images || []).map((x) => x.url));
 
       await loadPrivateData(i.id);
@@ -1927,6 +1966,7 @@
     q("clear-btn").addEventListener("click", clearForm);
     q("export-btn").addEventListener("click", exportBackup);
     q("p-badge-select").addEventListener("change", handleBadgeMode);
+    q("p-home-featured").addEventListener("change", syncHomeFeaturedFields);
     q("p-location-select").addEventListener("change", handleLocationMode);
     q("p-title").addEventListener("input", syncCodeSuggestion);
     q("p-description").addEventListener("keydown", (event) => {

@@ -13,6 +13,36 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(requireRole("admin", "owner"));
 
+let ensureHomeFeaturedSchemaPromise = null;
+
+async function ensureHomeFeaturedSchema() {
+  if (!ensureHomeFeaturedSchemaPromise) {
+    ensureHomeFeaturedSchemaPromise = (async () => {
+      await query("alter table properties add column if not exists home_featured boolean not null default false");
+      await query("alter table properties add column if not exists home_featured_order smallint");
+      await query("drop index if exists idx_properties_home_featured_order_unique");
+      await query(
+        "create unique index if not exists idx_properties_home_featured_order_unique on properties(home_featured_order) where home_featured = true and home_featured_order is not null"
+      );
+    })().catch((err) => {
+      ensureHomeFeaturedSchemaPromise = null;
+      throw err;
+    });
+  }
+  return ensureHomeFeaturedSchemaPromise;
+}
+
+router.use(async (_req, res, next) => {
+  try {
+    await ensureHomeFeaturedSchema();
+    next();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Erro ao preparar schema de destaque home:", err);
+    res.status(500).json({ ok: false, message: "Falha ao preparar schema de destaque da home." });
+  }
+});
+
 if (!fs.existsSync(config.uploadsDir)) {
   fs.mkdirSync(config.uploadsDir, { recursive: true });
 }
@@ -45,6 +75,8 @@ const propertySchema = z.object({
   price: z.coerce.number().min(0).optional().nullable(),
   description: z.string().optional().nullable(),
   is_published: z.union([z.boolean(), z.string()]).optional().nullable(),
+  home_featured: z.union([z.boolean(), z.string()]).optional().nullable(),
+  home_featured_order: z.union([z.coerce.number().int().min(1).max(3), z.literal(""), z.null()]).optional().nullable(),
   image_urls: z.array(z.string().url()).optional().default([])
 });
 const visibilitySchema = z.object({
@@ -86,6 +118,13 @@ function buildFallbackCode() {
   return `imovel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+function asNullableInt(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const num = Number(value);
+  if (!Number.isInteger(num)) return null;
+  return num;
+}
+
 function normalizePropertyBody(raw, fallback = {}) {
   const fallbackCode = asText(fallback.code);
   const code = asText(raw.code) || fallbackCode || buildFallbackCode();
@@ -93,6 +132,11 @@ function normalizePropertyBody(raw, fallback = {}) {
   const slugBase = asText(raw.title) || title || code;
   const rawDescription = asText(raw.description) || asText(fallback.description);
   const splitDescription = splitSensitiveDescription(rawDescription);
+
+  const homeFeatured = asBoolean(raw.home_featured, asBoolean(fallback.home_featured, false));
+  const homeFeaturedOrderRaw = asNullableInt(raw.home_featured_order);
+  const fallbackOrder = asNullableInt(fallback.home_featured_order);
+  const homeFeaturedOrder = homeFeatured ? (homeFeaturedOrderRaw ?? fallbackOrder ?? null) : null;
 
   return {
     code,
@@ -112,6 +156,8 @@ function normalizePropertyBody(raw, fallback = {}) {
     description: splitDescription.publicDescription,
     internal_notes_from_description: splitDescription.internalDescription,
     is_published: asBoolean(raw.is_published, asBoolean(fallback.is_published, true)),
+    home_featured: homeFeatured,
+    home_featured_order: homeFeaturedOrder,
     image_urls: Array.isArray(raw.image_urls) ? raw.image_urls : []
   };
 }
@@ -168,10 +214,29 @@ function dbToProperty(row) {
     price: Number(row.price),
     description: row.description,
     is_published: row.is_published,
+    home_featured: !!row.home_featured,
+    home_featured_order: row.home_featured_order !== null ? Number(row.home_featured_order) : null,
     created_at: row.created_at,
     updated_at: row.updated_at,
     images: []
   };
+}
+
+async function assignFeaturedOrderIfNeeded(inputOrder, currentPropertyId = null) {
+  if (Number.isInteger(inputOrder) && inputOrder >= 1 && inputOrder <= 3) return inputOrder;
+  const rows = await query(
+    `select home_featured_order
+     from properties
+     where home_featured = true
+       and home_featured_order is not null
+       and ($1::uuid is null or id <> $1)`,
+    [currentPropertyId]
+  );
+  const used = new Set(rows.rows.map((r) => Number(r.home_featured_order)).filter((n) => Number.isInteger(n)));
+  for (let slot = 1; slot <= 3; slot += 1) {
+    if (!used.has(slot)) return slot;
+  }
+  return null;
 }
 
 async function loadPropertyImages(propertyIds) {
@@ -243,11 +308,19 @@ router.post("/", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => 
       image_urls: req.body.image_urls ? JSON.parse(req.body.image_urls) : []
     });
     const body = normalizePropertyBody(parsed);
+    if (body.home_featured) {
+      body.home_featured_order = await assignFeaturedOrderIfNeeded(body.home_featured_order, null);
+      if (!body.home_featured_order) {
+        return res.status(409).json({ ok: false, message: "Ja existem 3 imoveis em destaque na home. Desmarque um deles ou altere a ordem." });
+      }
+    } else {
+      body.home_featured_order = null;
+    }
 
     const insert = await query(
       `insert into properties
-      (code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, is_published)
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+      (code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, is_published, home_featured, home_featured_order)
+      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
       returning *`,
       [
         body.code,
@@ -265,7 +338,9 @@ router.post("/", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => 
         body.status,
         body.price,
         body.description,
-        body.is_published
+        body.is_published,
+        body.home_featured,
+        body.home_featured_order
       ]
     );
 
@@ -289,6 +364,9 @@ router.post("/", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) => 
     if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
     if (String(err?.code || "") === "ENOSPC") {
       return res.status(507).json({ ok: false, message: "Sem espaco em disco para upload de imagens." });
+    }
+    if (String(err?.code || "") === "23505") {
+      return res.status(409).json({ ok: false, message: "Conflito de destaque na home. Escolha outra ordem (1, 2 ou 3)." });
     }
     const code = String(err?.code || "SEM_COD");
     const detail = String(err?.detail || "").trim();
@@ -324,11 +402,19 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
     });
     const body = normalizePropertyBody(parsed, current.rows[0]);
     body.slug = await ensureUniqueSlugForUpdate(body.slug, req.params.id);
+    if (body.home_featured) {
+      body.home_featured_order = await assignFeaturedOrderIfNeeded(body.home_featured_order, req.params.id);
+      if (!body.home_featured_order) {
+        return res.status(409).json({ ok: false, message: "Ja existem 3 imoveis em destaque na home. Desmarque um deles ou altere a ordem." });
+      }
+    } else {
+      body.home_featured_order = null;
+    }
 
     const update = await query(
       `update properties
-       set code=$1, slug=$2, title=$3, type=$4, badge=$5, location=$6, cep=$7, latitude=$8, longitude=$9, bedrooms=$10, bathrooms=$11, area=$12, status=$13, price=$14, description=$15, is_published=$16, updated_at=now()
-       where id=$17 returning *`,
+       set code=$1, slug=$2, title=$3, type=$4, badge=$5, location=$6, cep=$7, latitude=$8, longitude=$9, bedrooms=$10, bathrooms=$11, area=$12, status=$13, price=$14, description=$15, is_published=$16, home_featured=$17, home_featured_order=$18, updated_at=now()
+       where id=$19 returning *`,
       [
         body.code,
         body.slug,
@@ -346,6 +432,8 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
         body.price,
         body.description,
         body.is_published,
+        body.home_featured,
+        body.home_featured_order,
         req.params.id
       ]
     );
@@ -370,6 +458,10 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
     console.error("Erro ao atualizar imovel:", err);
     if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
     if (String(err?.code || "") === "23505") {
+      const detail = String(err?.detail || "").toLowerCase();
+      if (detail.includes("home_featured_order")) {
+        return res.status(409).json({ ok: false, message: "Conflito de destaque na home. Escolha outra ordem (1, 2 ou 3)." });
+      }
       return res.status(409).json({ ok: false, message: "Conflito de cadastro (codigo ou slug duplicado). Ajuste titulo/codigo e tente novamente." });
     }
     if (String(err?.code || "") === "ENOSPC") {

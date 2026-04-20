@@ -3543,6 +3543,8 @@
                 status: String(raw?.status || "Pronto"),
                 price: Number(raw?.price || 0),
                 description: String(raw?.description || ""),
+                home_featured: !!raw?.home_featured,
+                home_featured_order: Number.isFinite(Number(raw?.home_featured_order)) ? Number(raw.home_featured_order) : null,
                 images
             };
         }
@@ -4224,11 +4226,22 @@
         }
 
         function getHomeFeaturedProperties(limit = 3) {
-            const featured = properties.filter((property) => {
+            const featuredHome = properties
+                .filter((property) => property?.home_featured === true)
+                .sort((a, b) => {
+                    const oa = Number.isFinite(Number(a?.home_featured_order)) ? Number(a.home_featured_order) : 999;
+                    const ob = Number.isFinite(Number(b?.home_featured_order)) ? Number(b.home_featured_order) : 999;
+                    if (oa !== ob) return oa - ob;
+                    return Number(b?.price || 0) - Number(a?.price || 0);
+                })
+                .slice(0, limit);
+            if (featuredHome.length) return featuredHome;
+
+            const featuredByBadge = properties.filter((property) => {
                 const badge = normalizeText(property?.badge || "");
                 return badge.includes("destaque");
             });
-            const source = featured.length ? featured : properties;
+            const source = featuredByBadge.length ? featuredByBadge : properties;
             return source.slice(0, limit);
         }
 

@@ -5,10 +5,36 @@ const { sanitizePublicDescription } = require("../utils/sanitizePublicDescriptio
 
 const router = express.Router();
 
+let ensureHomeFeaturedSchemaPromise = null;
+
+async function ensureHomeFeaturedSchema() {
+  if (!ensureHomeFeaturedSchemaPromise) {
+    ensureHomeFeaturedSchemaPromise = (async () => {
+      await query("alter table properties add column if not exists home_featured boolean not null default false");
+      await query("alter table properties add column if not exists home_featured_order smallint");
+    })().catch((err) => {
+      ensureHomeFeaturedSchemaPromise = null;
+      throw err;
+    });
+  }
+  return ensureHomeFeaturedSchemaPromise;
+}
+
+router.use(async (_req, res, next) => {
+  try {
+    await ensureHomeFeaturedSchema();
+    next();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Erro ao preparar schema publico de destaque home:", err);
+    res.status(500).json({ ok: false, message: "Falha ao carregar propriedades." });
+  }
+});
+
 router.get("/properties", async (req, res) => {
   const limit = Math.min(Number(req.query.limit || 24), 100);
   const rows = await query(
-    "select id, code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, created_at, updated_at from properties where is_published = true order by created_at desc limit $1",
+    "select id, code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, home_featured, home_featured_order, created_at, updated_at from properties where is_published = true order by created_at desc limit $1",
     [limit]
   );
   const ids = rows.rows.map((r) => r.id);
@@ -35,7 +61,7 @@ router.get("/properties", async (req, res) => {
 
 router.get("/properties/:slug", async (req, res) => {
   const row = await query(
-    "select id, code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, created_at, updated_at from properties where slug = $1 and is_published = true limit 1",
+    "select id, code, slug, title, type, badge, location, cep, latitude, longitude, bedrooms, bathrooms, area, status, price, description, home_featured, home_featured_order, created_at, updated_at from properties where slug = $1 and is_published = true limit 1",
     [req.params.slug]
   );
   if (!row.rows.length) return res.status(404).json({ ok: false, message: "Imóvel não encontrado." });
