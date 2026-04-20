@@ -1200,10 +1200,18 @@
     }
 
     function privatePayload() {
+      const normalizeLooseEmail = (value) => {
+        const text = String(value || "").trim();
+        if (!text) return null;
+        // Nao bloqueia cadastro: se nao parece email, salva como null.
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) return null;
+        return text;
+      };
+
       return {
         owner_name: q("pr-owner-name").value.trim() || null,
         owner_phone: q("pr-owner-phone").value.trim() || null,
-        owner_email: q("pr-owner-email").value.trim() || null,
+        owner_email: normalizeLooseEmail(q("pr-owner-email").value),
         owner_document: q("pr-owner-document").value.trim() || null,
         owner_type: q("pr-owner-type").value || null,
         contract_status: q("pr-contract-status").value.trim() || null,

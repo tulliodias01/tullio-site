@@ -13,7 +13,8 @@ router.use(requireRole("admin", "owner"));
 const privateSchema = z.object({
   owner_name: z.string().trim().max(160).optional().nullable(),
   owner_phone: z.string().trim().max(40).optional().nullable(),
-  owner_email: z.string().trim().email().max(180).optional().nullable(),
+  // Nao bloqueia salvamento por email invalido no cadastro privado.
+  owner_email: z.string().trim().max(180).optional().nullable(),
   owner_document: z.string().trim().max(40).optional().nullable(),
   owner_type: z.string().trim().max(20).optional().nullable(),
   internal_notes: z.string().trim().max(10000).optional().nullable(),
