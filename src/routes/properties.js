@@ -198,6 +198,22 @@ async function savePropertyVersion(propertyId, changedBy, payload) {
   );
 }
 
+async function ensureUniqueSlugForUpdate(baseSlug, currentId) {
+  let candidate = String(baseSlug || "").trim();
+  if (!candidate) candidate = buildFallbackCode();
+
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const check = await query(
+      "select 1 from properties where slug = $1 and id <> $2 limit 1",
+      [candidate, currentId]
+    );
+    if (!check.rows.length) return candidate;
+    candidate = `${baseSlug}-${attempt + 2}`;
+  }
+
+  return `${baseSlug}-${Date.now().toString(36)}`;
+}
+
 router.get("/", async (_req, res) => {
   const propRows = await query("select * from properties order by created_at desc");
   const items = propRows.rows.map(dbToProperty);
@@ -288,6 +304,7 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
       image_urls: req.body.image_urls ? JSON.parse(req.body.image_urls) : []
     });
     const body = normalizePropertyBody(parsed, current.rows[0]);
+    body.slug = await ensureUniqueSlugForUpdate(body.slug, req.params.id);
 
     const update = await query(
       `update properties
@@ -330,7 +347,15 @@ router.put("/:id", upload.array("images", MAX_IMAGES_UPLOAD), async (req, res) =
     await savePropertyVersion(property.id, req.user.sub, { action: "update", property });
     return res.json({ ok: true, item: dbToProperty(property) });
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Erro ao atualizar imovel:", err);
     if (err instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Dados invalidos.", issues: err.issues });
+    if (String(err?.code || "") === "23505") {
+      return res.status(409).json({ ok: false, message: "Conflito de cadastro (codigo ou slug duplicado). Ajuste titulo/codigo e tente novamente." });
+    }
+    if (String(err?.code || "") === "ENOSPC") {
+      return res.status(507).json({ ok: false, message: "Sem espaco em disco para upload de imagens. Reduza quantidade/tamanho ou libere espaco." });
+    }
     return res.status(500).json({ ok: false, message: "Erro ao atualizar imovel." });
   }
 });
