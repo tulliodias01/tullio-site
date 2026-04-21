@@ -15,6 +15,7 @@
     "fix:obs-interna": "node scripts/cleanup_internal_notes.js",
     "import:launches": "node scripts/import_launches_imobssa.js",
     "enrich:launches": "node scripts/enrich_launches_descriptions.js",
+    "enrich:launch-addresses": "node scripts/enrich_launch_addresses.js",
     "cleanup:launch-images": "node scripts/cleanup_launch_placeholder_images.js",
     "normalize:launch-desc": "node scripts/normalize_launch_descriptions.js"
   },
