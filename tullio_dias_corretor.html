@@ -986,6 +986,31 @@
             display: block;
         }
 
+        .property-badge-mcmv-logo {
+            position: absolute;
+            top: 7.55rem;
+            right: 1.5rem;
+            width: 112px;
+            height: 30px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(30, 58, 95, 0.2);
+            box-shadow: 0 4px 10px rgba(30, 58, 95, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            overflow: hidden;
+        }
+
+        .property-badge-mcmv-logo img {
+            width: auto;
+            height: 20px;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .property-badge-builder-logo {
                 width: 104px;
@@ -995,6 +1020,17 @@
             }
 
             .property-badge-builder-logo img {
+                height: 18px;
+            }
+
+            .property-badge-mcmv-logo {
+                width: 104px;
+                height: 28px;
+                top: 7.05rem;
+                right: 1rem;
+            }
+
+            .property-badge-mcmv-logo img {
                 height: 18px;
             }
         }
@@ -3670,6 +3706,13 @@
             return `${text.slice(0, maxChars).replace(/\s+\S*$/, "").trim()}...`;
         }
 
+        const MCMV_LOGO_URL = "/public/badges/minha-casa-minha-vida.webp";
+
+        function isMinhaCasaMinhaVidaProperty(property) {
+            const haystack = `${property?.title || ""}\n${property?.description || ""}\n${property?.badge || ""}`;
+            return /minha\s+casa\s+minha\s+vida|mcmv/i.test(haystack);
+        }
+
         function extractBuilderFromDescription(description) {
             const raw = String(description || "");
             const line = raw.match(/(?:^|\n)\s*-?\s*Construtora:\s*([^\n\r]+)/i);
@@ -4460,6 +4503,9 @@
                         ? `<div class="property-badge-builder-logo"><img src="${escapeHtml(builderLogo)}" alt="Logo ${builderSafe}" loading="lazy" decoding="async" onerror="this.onerror=null; this.closest('.property-badge-builder-logo').outerHTML='<div class=&quot;property-badge-builder&quot;>${builderSafe}</div>';"></div>`
                         : `<div class="property-badge-builder">${builderSafe}</div>`)
                     : "";
+                const mcmvBadge = isMinhaCasaMinhaVidaProperty(property)
+                    ? `<div class="property-badge-mcmv-logo"><img src="${MCMV_LOGO_URL}" alt="Minha Casa Minha Vida" loading="lazy" decoding="async"></div>`
+                    : "";
 
                 return `
                     <div class="property-card" onclick='openDedicatedPropertyById(${JSON.stringify(property.id)})'>
@@ -4467,6 +4513,7 @@
                             ${imageMarkup}
                             <div class="property-badge">${escapeHtml(property.badge || "⭐ DESTAQUE")}</div>
                             ${builderBadge}
+                            ${mcmvBadge}
                         </div>
                         <div class="property-info">
                             <h3 class="property-title">${escapeHtml(property.title)}</h3>
