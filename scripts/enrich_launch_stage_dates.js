@@ -145,7 +145,7 @@ function extractStageAndDelivery(html) {
 
 function upsertTimelineBlock(description, stage, delivery, developer = "") {
   const base = String(description || "")
-    .replace(/(?:^|\n)Andamento da Obra:[\s\S]*?(?=\n[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][^:\n]{2,80}:|\s*$)/i, "")
+    .replace(/(?:^|\n)Andamento da Obra:[\s\S]*?(?:\n{2,}|$)/i, "\n")
     .trim();
 
   const lines = [];
