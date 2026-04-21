@@ -3570,6 +3570,33 @@
             return select.value || "⭐ DESTAQUE";
         }
 
+        function normalizeStatusKey(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function getBadgeByStatus(status) {
+            const key = normalizeStatusKey(status);
+            if (!key) return "";
+            if (key.includes("lancamento")) return "🚀 Lançamento";
+            if (key.includes("obra")) return "🏗️ Em Obras";
+            if (key.includes("entregue")) return "🔑 Entregue";
+            if (key.includes("pronto")) return "✅ Pronto para Morar";
+            return "";
+        }
+
+        function resolvePropertyBadge(propertyLike) {
+            const auto = getBadgeByStatus(propertyLike?.status);
+            if (auto) return auto;
+            const existing = String(propertyLike?.badge || "").trim();
+            return existing || "⭐ Destaque";
+        }
+
         function extractTdCodeNumber(code) {
             const match = String(code || "").trim().match(/^#?\s*TD\s*(\d{1,4})$/i);
             if (!match) return null;
@@ -3613,6 +3640,7 @@
             const slug = String(raw?.slug || "").trim();
             const lat = Number(raw?.latitude);
             const lng = Number(raw?.longitude);
+            const status = String(raw?.status || "Pronto").trim() || "Pronto";
             const imagesRaw = Array.isArray(raw?.images) ? raw.images : [];
             const images = uniqueArray(imagesRaw.map((img) => {
                 if (!img) return "";
@@ -3625,7 +3653,7 @@
                 code,
                 title,
                 type: String(raw?.type || "Apartamento"),
-                badge: String(raw?.badge || "⭐ DESTAQUE"),
+                badge: resolvePropertyBadge({ status, badge: raw?.badge }),
                 location: String(raw?.location || ""),
                 cep: String(raw?.cep || ""),
                 latitude: Number.isFinite(lat) ? lat : null,
@@ -3633,7 +3661,7 @@
                 bedrooms: Number(raw?.bedrooms || 0),
                 bathrooms: Number(raw?.bathrooms || 0),
                 area: Number(raw?.area || 0),
-                status: String(raw?.status || "Pronto"),
+                status,
                 price: Number(raw?.price || 0),
                 description: String(raw?.description || ""),
                 home_featured: !!raw?.home_featured,
@@ -4504,7 +4532,7 @@
                     <div class="property-card" onclick='openDedicatedPropertyById(${JSON.stringify(property.id)})'>
                         <div class="property-image">
                             ${imageMarkup}
-                            <div class="property-badge">${escapeHtml(property.badge || "⭐ DESTAQUE")}</div>
+                            <div class="property-badge">${escapeHtml(resolvePropertyBadge(property))}</div>
                             ${builderBadge}
                             ${mcmvBadge}
                         </div>
