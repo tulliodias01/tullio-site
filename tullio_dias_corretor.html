@@ -3674,7 +3674,7 @@
             "andre guimaraes": "/public/builders/andre-guimaraes.png",
             "andre guimarães": "/public/builders/andre-guimaraes.png",
             "ferreira ferraz": "/public/builders/ferreira-ferraz.png",
-            "tenda": "/public/builders/tenda.png",
+            "tenda": "/public/builders/tenda.svg",
             "concreta": "/public/builders/concreta.png",
             "sertenge": "/public/builders/sertenge.svg",
             "grafico": "/public/builders/grafico.png",
@@ -3791,12 +3791,12 @@
         function setupDescriptionCollapse(container, toggle, fullText) {
             if (!container || !toggle) return;
             const text = String(fullText || "").trim();
-            const shouldCollapse = text.length > 420;
-            container.classList.toggle("is-collapsed", shouldCollapse);
+            const shouldCollapse = text.length > 1800;
+            container.classList.remove("is-collapsed");
             toggle.hidden = !shouldCollapse;
             if (!shouldCollapse) return;
 
-            toggle.textContent = "Ler mais";
+            toggle.textContent = "Ler menos";
             toggle.onclick = () => {
                 const expanded = !container.classList.contains("is-collapsed");
                 if (expanded) {
