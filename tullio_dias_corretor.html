@@ -986,8 +986,13 @@
             display: block;
         }
 
-        .property-badge-builder-logo img[src*="tenda"] {
-            height: 24px;
+        .property-badge-builder-logo.logo-wide {
+            width: 132px;
+            padding-inline: 10px;
+        }
+
+        .property-badge-builder-logo.logo-wide img {
+            height: 23px;
         }
 
         .property-badge-mcmv-logo {
@@ -1022,8 +1027,13 @@
                 height: 18px;
             }
 
-            .property-badge-builder-logo img[src*="tenda"] {
-                height: 21px;
+            .property-badge-builder-logo.logo-wide {
+                width: 124px;
+                padding-inline: 8px;
+            }
+
+            .property-badge-builder-logo.logo-wide img {
+                height: 20px;
             }
 
             .property-badge-mcmv-logo {
@@ -3797,6 +3807,15 @@
             return hit ? BUILDER_LOGO_MAP[hit] : "";
         }
 
+        function getBuilderBadgeClass(builder) {
+            const key = normalizeBuilderKey(builder);
+            if (!key) return "";
+            if (key.includes("tenda") || key.includes("pejota") || key.includes("pj empreendimentos")) {
+                return "logo-wide";
+            }
+            return "";
+        }
+
         function formatInlineDescriptionText(text) {
             const escaped = escapeHtml(String(text || ""));
             const boldParsed = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -4526,10 +4545,11 @@
                 if (Number(property.area) > 0) details.push(`📐 ${property.area}m²`);
                 const builder = extractBuilderFromDescription(property.description);
                 const builderLogo = getBuilderLogo(builder);
+                const builderBadgeClass = getBuilderBadgeClass(builder);
                 const builderSafe = escapeHtml(builder);
                 const builderBadge = builder
                     ? (builderLogo
-                        ? `<div class="property-badge-builder-logo"><img src="${escapeHtml(builderLogo)}" alt="Logo ${builderSafe}" loading="lazy" decoding="async" onerror="this.onerror=null; this.closest('.property-badge-builder-logo').outerHTML='<div class=&quot;property-badge-builder&quot;>${builderSafe}</div>';"></div>`
+                        ? `<div class="property-badge-builder-logo ${builderBadgeClass}"><img src="${escapeHtml(builderLogo)}" alt="Logo ${builderSafe}" loading="lazy" decoding="async" onerror="this.onerror=null; this.closest('.property-badge-builder-logo').outerHTML='<div class=&quot;property-badge-builder&quot;>${builderSafe}</div>';"></div>`
                         : `<div class="property-badge-builder">${builderSafe}</div>`)
                     : "";
                 const mcmvBadge = isMinhaCasaMinhaVidaProperty(property)
