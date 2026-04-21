@@ -3602,7 +3602,9 @@
                 .replace(/\s+/g, " ")
                 .trim();
             const withoutFeatures = clean.replace(/Caracter[ií]sticas:\s*[\s\S]*$/i, "").trim();
-            const text = withoutFeatures || clean;
+            const withoutService = withoutFeatures.replace(/Atendimento:\s*[\s\S]*$/i, "").trim();
+            const withoutCall = withoutService.replace(/Fale no\s+WhatsApp\.?$/i, "").trim();
+            const text = withoutCall || withoutService || withoutFeatures || clean;
             if (text.length <= maxChars) return text;
             return `${text.slice(0, maxChars).replace(/\s+\S*$/, "").trim()}...`;
         }
