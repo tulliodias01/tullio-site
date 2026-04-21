@@ -65,6 +65,14 @@ function toBullets(lines, max = 8) {
     const line = String(raw || "").replace(/^[-•*]\s*/, "").trim();
     if (!line) continue;
     const key = normalizeText(line);
+    if ([
+      "diferenciais:",
+      "lazer:",
+      "localizacao e mobilidade:",
+      "condicoes e financiamento:",
+      "resumo tecnico:",
+      "visao geral:"
+    ].includes(key)) continue;
     if (!key || seen.has(key)) continue;
     seen.add(key);
     clean.push(`- ${line}`);

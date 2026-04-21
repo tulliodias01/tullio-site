@@ -3653,16 +3653,24 @@
                 const bodyLines = lines.slice(1);
                 if (headingLine && bodyLines.length) {
                     const heading = firstLine.replace(/:$/, "");
-                    const bodyLooksLikeList = bodyLines.length >= 2 && bodyLines.every((line) => line.length <= 170);
+                    const bulletCount = bodyLines.filter((line) => /^[-*]\s+/.test(line)).length;
+                    const bodyLooksLikeList = bulletCount >= Math.max(1, Math.floor(bodyLines.length * 0.5));
                     if (bodyLooksLikeList) {
                         const items = bodyLines
                             .map((line) => line.replace(/^[-*]\s+/, ""))
+                            .filter(Boolean)
                             .map((line) => `<li>${formatInlineDescriptionText(line)}</li>`)
                             .join("");
                         return `<p><strong>${formatInlineDescriptionText(heading)}:</strong></p><ul>${items}</ul>`;
                     }
-                    const paragraph = bodyLines.join(" ").replace(/\s+/g, " ").trim();
-                    return `<p><strong>${formatInlineDescriptionText(heading)}:</strong> ${formatInlineDescriptionText(paragraph)}</p>`;
+                    const blocks = bodyLines
+                        .map((line) => line.replace(/\s+/g, " ").trim())
+                        .filter(Boolean)
+                        .map((line, idx) => (idx === 0
+                            ? `<p><strong>${formatInlineDescriptionText(heading)}:</strong> ${formatInlineDescriptionText(line)}</p>`
+                            : `<p>${formatInlineDescriptionText(line)}</p>`))
+                        .join("");
+                    return blocks;
                 }
 
                 const paragraph = lines.join(" ").replace(/\s+/g, " ").trim();
