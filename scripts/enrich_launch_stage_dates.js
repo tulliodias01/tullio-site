@@ -145,7 +145,7 @@ function upsertTimelineBlock(description, stage, delivery) {
     .trim();
 
   const lines = [];
-  lines.push(`- Etapa (ImobSSA): ${stage || "Não informado"}`);
+  lines.push(`- Etapa: ${stage || "Não informado"}`);
   if (stage === "Em Obras") lines.push("- Situação: Obra iniciada");
   else if (stage === "Lançamento") lines.push("- Situação: Pré-obra / lançamento");
   else if (stage === "Entregue" || stage === "Pronto") lines.push("- Situação: Entregue");
