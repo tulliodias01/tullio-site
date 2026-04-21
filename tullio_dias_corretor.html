@@ -4511,14 +4511,30 @@
                     return Number(b?.price || 0) - Number(a?.price || 0);
                 })
                 .slice(0, limit);
-            if (featuredHome.length) return featuredHome;
+            if (featuredHome.length >= limit) return featuredHome;
+
+            const selected = [...featuredHome];
+            const selectedIds = new Set(selected.map((p) => String(p?.id || "")));
 
             const featuredByBadge = properties.filter((property) => {
+                if (selectedIds.has(String(property?.id || ""))) return false;
                 const badge = normalizeText(property?.badge || "");
                 return badge.includes("destaque");
             });
-            const source = featuredByBadge.length ? featuredByBadge : properties;
-            return source.slice(0, limit);
+
+            for (const property of featuredByBadge) {
+                if (selected.length >= limit) break;
+                selected.push(property);
+                selectedIds.add(String(property?.id || ""));
+            }
+
+            for (const property of properties) {
+                if (selected.length >= limit) break;
+                if (selectedIds.has(String(property?.id || ""))) continue;
+                selected.push(property);
+            }
+
+            return selected.slice(0, limit);
         }
 
         function renderProperties(list = null) {
