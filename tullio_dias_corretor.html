@@ -4431,10 +4431,11 @@
                 if (Number(property.area) > 0) details.push(`📐 ${property.area}m²`);
                 const builder = extractBuilderFromDescription(property.description);
                 const builderLogo = getBuilderLogo(builder);
+                const builderSafe = escapeHtml(builder);
                 const builderBadge = builder
                     ? (builderLogo
-                        ? `<div class="property-badge-builder-logo"><img src="${escapeHtml(builderLogo)}" alt="Logo ${escapeHtml(builder)}" loading="lazy" decoding="async"></div>`
-                        : `<div class="property-badge-builder">${escapeHtml(builder)}</div>`)
+                        ? `<div class="property-badge-builder-logo"><img src="${escapeHtml(builderLogo)}" alt="Logo ${builderSafe}" loading="lazy" decoding="async" onerror="this.onerror=null; this.closest('.property-badge-builder-logo').outerHTML='<div class=&quot;property-badge-builder&quot;>${builderSafe}</div>';"></div>`
+                        : `<div class="property-badge-builder">${builderSafe}</div>`)
                     : "";
 
                 return `
