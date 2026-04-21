@@ -16,6 +16,7 @@
     "import:launches": "node scripts/import_launches_imobssa.js",
     "enrich:launches": "node scripts/enrich_launches_descriptions.js",
     "enrich:launch-addresses": "node scripts/enrich_launch_addresses.js",
+    "enrich:launch-stage": "node scripts/enrich_launch_stage_dates.js",
     "fix:launch-text-cep": "node scripts/fix_launch_text_and_cep.js",
     "cleanup:launch-images": "node scripts/cleanup_launch_placeholder_images.js",
     "normalize:launch-desc": "node scripts/normalize_launch_descriptions.js"
