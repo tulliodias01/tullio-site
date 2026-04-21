@@ -136,16 +136,21 @@ function extractStageAndDelivery(html) {
 
   const stage = normalizeStage(stageRaw);
   const delivery = normalizeMonthYear(deliveryRaw);
-  return { stage, delivery };
+  const headRaw = (block.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i) || [])[1] || "";
+  const headText = decodeEntities(headRaw).replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const devCandidate = headText.includes("|") ? headText.split("|").slice(1).join("|").trim() : "";
+  const developer = devCandidate || "";
+  return { stage, delivery, developer };
 }
 
-function upsertTimelineBlock(description, stage, delivery) {
+function upsertTimelineBlock(description, stage, delivery, developer = "") {
   const base = String(description || "")
     .replace(/(?:^|\n)Andamento da Obra:[\s\S]*?(?=\n[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][^:\n]{2,80}:|\s*$)/i, "")
     .trim();
 
   const lines = [];
   lines.push(`- Etapa: ${stage || "Não informado"}`);
+  if (developer) lines.push(`- Construtora: ${developer}`);
   if (stage === "Em Obras") lines.push("- Situação: Obra iniciada");
   else if (stage === "Lançamento") lines.push("- Situação: Pré-obra / lançamento");
   else if (stage === "Entregue" || stage === "Pronto") lines.push("- Situação: Entregue");
@@ -177,7 +182,7 @@ async function run() {
 
     try {
       const html = await fetchHtml(url);
-      const { stage, delivery } = extractStageAndDelivery(html);
+      const { stage, delivery, developer } = extractStageAndDelivery(html);
       const current = await query("select id, description, status from properties where code=$1 limit 1", [code]);
       if (!current.rows.length) continue;
       const row = current.rows[0];
@@ -187,7 +192,7 @@ async function run() {
         console.log(`[${i + 1}/${selected.length}] SEM_ETAPA ${code}`);
         continue;
       }
-      const nextDescription = upsertTimelineBlock(row.description, stageFinal, delivery);
+      const nextDescription = upsertTimelineBlock(row.description, stageFinal, delivery, developer);
 
       if (!dryRun) {
         await query(

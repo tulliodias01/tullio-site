@@ -947,6 +947,20 @@
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
 
+        .property-badge-builder {
+            position: absolute;
+            top: 4.2rem;
+            right: 1.5rem;
+            background: rgba(30, 58, 95, 0.9);
+            color: #fff;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            box-shadow: 0 4px 10px rgba(30, 58, 95, 0.28);
+        }
+
         .property-info {
             padding: 2rem;
         }
@@ -3618,6 +3632,14 @@
             return `${text.slice(0, maxChars).replace(/\s+\S*$/, "").trim()}...`;
         }
 
+        function extractBuilderFromDescription(description) {
+            const raw = String(description || "");
+            const line = raw.match(/(?:^|\n)\s*-?\s*Construtora:\s*([^\n\r]+)/i);
+            const value = (line && line[1]) ? String(line[1]).trim() : "";
+            if (!value) return "";
+            return value.replace(/[|]+/g, " ").replace(/\s{2,}/g, " ").trim();
+        }
+
         function formatInlineDescriptionText(text) {
             const escaped = escapeHtml(String(text || ""));
             const boldParsed = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -4032,6 +4054,7 @@
             const chipsData = [
                 property.type ? `Tipo: ${property.type}` : "",
                 property.code ? `Cód. ${property.code}` : "",
+                extractBuilderFromDescription(property.description) ? `Construtora: ${extractBuilderFromDescription(property.description)}` : "",
                 Number(property.bedrooms) > 0 ? `${property.bedrooms} quartos` : "",
                 Number(property.bathrooms) > 0 ? `${property.bathrooms} banheiros` : "",
                 Number(property.area) > 0 ? `${property.area} m²` : "",
@@ -4282,6 +4305,7 @@
             const chipsData = [
                 property.type ? `Tipo: ${property.type}` : "",
                 property.code ? `Cód. ${property.code}` : "",
+                extractBuilderFromDescription(property.description) ? `Construtora: ${extractBuilderFromDescription(property.description)}` : "",
                 Number(property.bedrooms) > 0 ? `${property.bedrooms} quartos` : "",
                 Number(property.bathrooms) > 0 ? `${property.bathrooms} banheiros` : "",
                 Number(property.area) > 0 ? `${property.area} m²` : "",
@@ -4343,12 +4367,15 @@
                 if (Number(property.bedrooms) > 0) details.push(`🛏️ ${property.bedrooms} quartos`);
                 if (Number(property.bathrooms) > 0) details.push(`🚿 ${property.bathrooms} banheiros`);
                 if (Number(property.area) > 0) details.push(`📐 ${property.area}m²`);
+                const builder = extractBuilderFromDescription(property.description);
+                const builderBadge = builder ? `<div class="property-badge-builder">${escapeHtml(builder)}</div>` : "";
 
                 return `
                     <div class="property-card" onclick='openDedicatedPropertyById(${JSON.stringify(property.id)})'>
                         <div class="property-image">
                             ${imageMarkup}
                             <div class="property-badge">${escapeHtml(property.badge || "⭐ DESTAQUE")}</div>
+                            ${builderBadge}
                         </div>
                         <div class="property-info">
                             <h3 class="property-title">${escapeHtml(property.title)}</h3>
