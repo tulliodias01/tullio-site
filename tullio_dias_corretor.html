@@ -961,6 +961,30 @@
             box-shadow: 0 4px 10px rgba(30, 58, 95, 0.28);
         }
 
+        .property-badge-builder-logo {
+            position: absolute;
+            top: 4.15rem;
+            right: 1.5rem;
+            width: 108px;
+            height: 34px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(30, 58, 95, 0.2);
+            box-shadow: 0 4px 10px rgba(30, 58, 95, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            overflow: hidden;
+        }
+
+        .property-badge-builder-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
         .property-info {
             padding: 2rem;
         }
@@ -3640,6 +3664,44 @@
             return value.replace(/[|]+/g, " ").replace(/\s{2,}/g, " ").trim();
         }
 
+        const BUILDER_LOGO_MAP = {
+            "mrv": "/public/builders/mrv.webp",
+            "direcional": "/public/builders/direcional.webp",
+            "stanza": "/public/builders/stanza.webp",
+            "jvf": "/public/builders/jvf.webp",
+            "cbpr": "/public/builders/cbpr.webp",
+            "bauhaus": "/public/builders/bauhaus.webp",
+            "andre guimaraes": "/public/builders/andre-guimaraes.webp",
+            "andre guimarães": "/public/builders/andre-guimaraes.webp",
+            "ferreira ferraz": "/public/builders/ferreira-ferraz.webp",
+            "tenda": "/public/builders/tenda.webp",
+            "concreta": "/public/builders/concreta.webp",
+            "sertenge": "/public/builders/sertenge.webp",
+            "grafico": "/public/builders/grafico.webp",
+            "gráfico": "/public/builders/grafico.webp",
+            "barbosa tinel": "/public/builders/barbosa-tinel.webp",
+            "md": "/public/builders/md.webp",
+            "pj empreendimentos": "/public/builders/pj-empreendimentos.webp"
+        };
+
+        function normalizeBuilderKey(name) {
+            return String(name || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function getBuilderLogo(builder) {
+            const key = normalizeBuilderKey(builder);
+            if (!key) return "";
+            if (BUILDER_LOGO_MAP[key]) return BUILDER_LOGO_MAP[key];
+            const hit = Object.keys(BUILDER_LOGO_MAP).find((k) => key.includes(k) || k.includes(key));
+            return hit ? BUILDER_LOGO_MAP[hit] : "";
+        }
+
         function formatInlineDescriptionText(text) {
             const escaped = escapeHtml(String(text || ""));
             const boldParsed = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -4368,7 +4430,12 @@
                 if (Number(property.bathrooms) > 0) details.push(`🚿 ${property.bathrooms} banheiros`);
                 if (Number(property.area) > 0) details.push(`📐 ${property.area}m²`);
                 const builder = extractBuilderFromDescription(property.description);
-                const builderBadge = builder ? `<div class="property-badge-builder">${escapeHtml(builder)}</div>` : "";
+                const builderLogo = getBuilderLogo(builder);
+                const builderBadge = builder
+                    ? (builderLogo
+                        ? `<div class="property-badge-builder-logo"><img src="${escapeHtml(builderLogo)}" alt="Logo ${escapeHtml(builder)}" loading="lazy" decoding="async"></div>`
+                        : `<div class="property-badge-builder">${escapeHtml(builder)}</div>`)
+                    : "";
 
                 return `
                     <div class="property-card" onclick='openDedicatedPropertyById(${JSON.stringify(property.id)})'>
