@@ -963,10 +963,10 @@
 
         .property-badge-builder-logo {
             position: absolute;
-            top: 4.15rem;
+            top: 4.35rem;
             right: 1.5rem;
-            width: 108px;
-            height: 34px;
+            width: clamp(132px, 44%, 210px);
+            height: 44px;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.96);
             border: 1px solid rgba(30, 58, 95, 0.2);
@@ -983,6 +983,15 @@
             height: 100%;
             object-fit: contain;
             display: block;
+        }
+
+        @media (max-width: 768px) {
+            .property-badge-builder-logo {
+                width: clamp(126px, 52%, 190px);
+                height: 40px;
+                top: 4.05rem;
+                right: 1rem;
+            }
         }
 
         .property-info {
