@@ -3813,7 +3813,13 @@
         function getBuilderBadgeClass(builder) {
             const key = normalizeBuilderKey(builder);
             if (!key) return "";
-            if (key.includes("tenda") || key.includes("pejota") || key.includes("pj empreendimentos")) {
+            if (
+                key.includes("tenda")
+                || key.includes("pejota")
+                || key.includes("pj empreendimentos")
+                || key.includes("andre guimaraes")
+                || key.includes("andre guimaraes empreendimentos")
+            ) {
                 return "logo-wide";
             }
             return "";
