@@ -3766,16 +3766,63 @@
             return /minha\s+casa\s+minha\s+vida|mcmv/i.test(haystack);
         }
 
-        function extractBuilderFromDescription(description) {
+        const BUILDER_INFER_ALIASES = [
+            ["andre guimaraes", "andre guimaraes"],
+            ["ferreira ferraz", "ferreira ferraz"],
+            ["santa helena", "santa helena"],
+            ["barbosa tinel", "barbosa tinel"],
+            ["s3 engenharia", "s3 engenharia"],
+            ["construtora tenda", "tenda"],
+            ["tenda", "tenda"],
+            ["sensian", "mrv"],
+            ["sensia", "mrv"],
+            ["mrv", "mrv"],
+            ["direcional", "direcional"],
+            ["stanza", "stanza"],
+            ["grafico", "grafico"],
+            ["concreta", "concreta"],
+            ["prima", "prima"],
+            ["pj empreendimentos", "pejota"],
+            ["pejota", "pejota"],
+            ["brl incorp", "brl incorp"],
+            ["bauhaus", "bauhaus"],
+            ["jvf", "jvf"],
+            ["cbpr", "cbpr"],
+            ["gcm", "gcm"],
+            ["lpl", "lpl"],
+            ["lsn", "lsn"],
+            ["3i", "3i"]
+        ];
+
+        function hasAliasWord(text, alias) {
+            const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const rx = new RegExp(`(?:^|\\s)${escaped}(?:\\s|$)`, "i");
+            return rx.test(text);
+        }
+
+        function inferBuilderFromText(description, title = "") {
+            const haystack = normalizeBuilderKey(`${title} ${description}`);
+            if (!haystack) return "";
+            for (const [alias, target] of BUILDER_INFER_ALIASES) {
+                const key = normalizeBuilderKey(alias);
+                if (!key) continue;
+                if (hasAliasWord(haystack, key)) return target;
+            }
+            return "";
+        }
+
+        function extractBuilderFromDescription(description, title = "") {
             const raw = String(description || "");
             const line = raw.match(/(?:^|\n)\s*-?\s*Construtora:\s*([^\n\r]+)/i);
             const value = (line && line[1]) ? String(line[1]).trim() : "";
-            if (!value) return "";
-            return value.replace(/[|]+/g, " ").replace(/\s{2,}/g, " ").trim();
+            if (value) return value.replace(/[|]+/g, " ").replace(/\s{2,}/g, " ").trim();
+            return inferBuilderFromText(description, title);
         }
 
         const BUILDER_LOGO_MAP = {
             "mrv": "/public/builders/mrv.svg",
+            "sensia": "/public/builders/mrv.svg",
+            "sensian": "/public/builders/mrv.svg",
             "direcional": "/public/builders/direcional.svg",
             "stanza": "/public/builders/stanza.png",
             "jvf": "/public/builders/jvf.png",
@@ -4257,7 +4304,7 @@
             const chipsData = [
                 property.type ? `Tipo: ${property.type}` : "",
                 property.code ? `Cód. ${property.code}` : "",
-                extractBuilderFromDescription(property.description) ? `Construtora: ${extractBuilderFromDescription(property.description)}` : "",
+                extractBuilderFromDescription(property.description, property.title) ? `Construtora: ${extractBuilderFromDescription(property.description, property.title)}` : "",
                 Number(property.bedrooms) > 0 ? `${property.bedrooms} quartos` : "",
                 Number(property.bathrooms) > 0 ? `${property.bathrooms} banheiros` : "",
                 Number(property.area) > 0 ? `${property.area} m²` : "",
@@ -4518,7 +4565,7 @@
             const chipsData = [
                 property.type ? `Tipo: ${property.type}` : "",
                 property.code ? `Cód. ${property.code}` : "",
-                extractBuilderFromDescription(property.description) ? `Construtora: ${extractBuilderFromDescription(property.description)}` : "",
+                extractBuilderFromDescription(property.description, property.title) ? `Construtora: ${extractBuilderFromDescription(property.description, property.title)}` : "",
                 Number(property.bedrooms) > 0 ? `${property.bedrooms} quartos` : "",
                 Number(property.bathrooms) > 0 ? `${property.bathrooms} banheiros` : "",
                 Number(property.area) > 0 ? `${property.area} m²` : "",
@@ -4596,7 +4643,7 @@
                 if (Number(property.bedrooms) > 0) details.push(`🛏️ ${property.bedrooms} quartos`);
                 if (Number(property.bathrooms) > 0) details.push(`🚿 ${property.bathrooms} banheiros`);
                 if (Number(property.area) > 0) details.push(`📐 ${property.area}m²`);
-                const builder = extractBuilderFromDescription(property.description);
+                const builder = extractBuilderFromDescription(property.description, property.title);
                 const builderLogo = getBuilderLogo(builder);
                 const builderBadgeClass = getBuilderBadgeClass(builder);
                 const builderSafe = escapeHtml(builder);
