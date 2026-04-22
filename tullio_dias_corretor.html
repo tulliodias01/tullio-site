@@ -3139,9 +3139,8 @@
             <div class="form-group">
                 <label for="tipo">Tipo de Imóvel</label>
                 <select id="tipo">
-                    <option value="Todos">Todos</option>
-                    <option value="Imóvel">Imóveis</option>
-                    <option value="Lançamento">Lançamento</option>
+                    <option value="Todos">Todos (Lançamentos + Prontos)</option>
+                    <option value="Lançamento">Somente Lançamentos</option>
                     <option value="Apartamento">Apartamento</option>
                     <option value="Casa">Casa</option>
                     <option value="Comercial">Comercial</option>
@@ -4975,18 +4974,13 @@
                 if (selectedType === "lancamento") {
                     return current.includes("lancamento");
                 }
-                if (selectedType === "imovel") {
-                    return !current.includes("lancamento");
-                }
                 return false;
             };
 
             return properties.filter((property) => {
                 const matchTipo = selectedType === "lancamento"
                     ? isLaunchProperty(property)
-                    : selectedType === "imovel"
-                        ? !isLaunchProperty(property)
-                        : matchPropertyType(property.type);
+                    : matchPropertyType(property.type);
                 const matchLocal = matchLocation(property.location, localizacao);
                 const matchPrecoMax = !precoMax || Number(property.price) <= precoMax;
                 const matchQuartos = quartos === "Qualquer"
