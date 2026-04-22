@@ -995,6 +995,12 @@
             height: 23px;
         }
 
+        .property-badge-builder-logo.logo-dark-bg {
+            background: #0f243a;
+            border-color: #0f243a;
+            box-shadow: 0 6px 12px rgba(7, 18, 30, 0.35);
+        }
+
         .property-badge-mcmv-logo {
             position: absolute;
             top: 7.55rem;
@@ -1034,6 +1040,11 @@
 
             .property-badge-builder-logo.logo-wide img {
                 height: 20px;
+            }
+
+            .property-badge-builder-logo.logo-dark-bg {
+                background: #112941;
+                border-color: #112941;
             }
 
             .property-badge-mcmv-logo {
@@ -3813,6 +3824,7 @@
         function getBuilderBadgeClass(builder) {
             const key = normalizeBuilderKey(builder);
             if (!key) return "";
+            const classes = [];
             if (
                 key.includes("tenda")
                 || key.includes("pejota")
@@ -3820,9 +3832,12 @@
                 || key.includes("andre guimaraes")
                 || key.includes("andre guimaraes empreendimentos")
             ) {
-                return "logo-wide";
+                classes.push("logo-wide");
             }
-            return "";
+            if (key.includes("ferreira ferraz")) {
+                classes.push("logo-dark-bg");
+            }
+            return classes.join(" ");
         }
 
         function formatInlineDescriptionText(text) {
