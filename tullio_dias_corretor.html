@@ -3128,12 +3128,13 @@
             <div class="form-group">
                 <label for="tipo">Tipo de Imóvel</label>
                 <select id="tipo">
-                    <option>Todos</option>
+                    <option value="Todos">Todos</option>
+                    <option value="Imóvel">Imóveis (exceto lançamentos)</option>
                     <option value="Lançamento">Lançamento</option>
-                    <option>Apartamento</option>
-                    <option>Casa</option>
-                    <option>Comercial</option>
-                    <option>Terreno</option>
+                    <option value="Apartamento">Apartamento</option>
+                    <option value="Casa">Casa</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Terreno">Terreno</option>
                 </select>
             </div>
             <div class="form-group">
@@ -3160,7 +3161,11 @@
                         <option value="Graça">Graça</option>
                         <option value="Rio Vermelho">Rio Vermelho</option>
                         <option value="Patamares">Patamares</option>
+                        <option value="Itapuã">Itapuã</option>
+                        <option value="Piatã">Piatã</option>
                         <option value="Stella Maris">Stella Maris</option>
+                        <option value="Boca do Rio">Boca do Rio</option>
+                        <option value="Imbuí">Imbuí</option>
                         <option value="Alphaville">Alphaville</option>
                         <option value="Centro">Centro</option>
                     </optgroup>
@@ -4305,7 +4310,17 @@
                 backToHomeFromPropertyPage(true);
             }
             const locationField = document.getElementById("localizacao");
-            if (locationField) locationField.value = neighborhood;
+            if (locationField) {
+                const target = normalizeText(neighborhood);
+                const options = Array.from(locationField.options || []);
+                const exact = options.find((opt) => normalizeText(opt.value) === target || normalizeText(opt.textContent) === target);
+                if (exact) {
+                    locationField.value = exact.value;
+                } else {
+                    const partial = options.find((opt) => normalizeText(opt.value).includes(target) || target.includes(normalizeText(opt.value)));
+                    locationField.value = partial ? partial.value : "";
+                }
+            }
             const filtered = filterProperties();
             renderProperties(filtered);
             document.getElementById("propriedades")?.scrollIntoView({ behavior: "smooth" });
@@ -4845,6 +4860,26 @@
                 return { isSold, isRental };
             };
 
+            const isLaunchProperty = (property) => {
+                const text = normalizeText([
+                    property?.type || "",
+                    property?.status || "",
+                    property?.badge || "",
+                    property?.code || ""
+                ].join(" "));
+                return text.includes("lancamento") || text.includes("em obras") || text.includes("obra") || text.includes("lanc ");
+            };
+
+            const matchLocation = (propertyLocation, query) => {
+                const q = normalizeText(query);
+                if (!q) return true;
+                const loc = normalizeText(propertyLocation || "");
+                if (!loc) return false;
+                if (loc.includes(q)) return true;
+                const parts = q.split(" ").filter((p) => p.length >= 2);
+                return parts.length ? parts.every((part) => loc.includes(part)) : false;
+            };
+
             const matchPropertyType = (propertyType) => {
                 if (selectedType === "todos") return true;
                 const current = normalizeText(propertyType || "");
@@ -4867,12 +4902,19 @@
                 if (selectedType === "lancamento") {
                     return current.includes("lancamento");
                 }
+                if (selectedType === "imovel") {
+                    return !current.includes("lancamento");
+                }
                 return false;
             };
 
             return properties.filter((property) => {
-                const matchTipo = matchPropertyType(property.type);
-                const matchLocal = !localizacao || property.location.toLowerCase().includes(localizacao.toLowerCase());
+                const matchTipo = selectedType === "lancamento"
+                    ? isLaunchProperty(property)
+                    : selectedType === "imovel"
+                        ? !isLaunchProperty(property)
+                        : matchPropertyType(property.type);
+                const matchLocal = matchLocation(property.location, localizacao);
                 const matchPrecoMax = !precoMax || Number(property.price) <= precoMax;
                 const matchQuartos = quartos === "Qualquer"
                     || (quartos === "4+" && Number(property.bedrooms) >= 4)
