@@ -3160,34 +3160,6 @@
                 <label for="localizacao">Localização</label>
                 <select id="localizacao">
                     <option value="">Todos os bairros</option>
-                    <optgroup label="Salvador">
-                        <option value="Barra">Barra</option>
-                        <option value="Ondina">Ondina</option>
-                        <option value="Vitória">Vitória</option>
-                        <option value="Pituba">Pituba</option>
-                        <option value="Itaigara">Itaigara</option>
-                        <option value="Caminho das Árvores">Caminho das Árvores</option>
-                        <option value="Horto Florestal">Horto Florestal</option>
-                        <option value="Graça">Graça</option>
-                        <option value="Rio Vermelho">Rio Vermelho</option>
-                        <option value="Patamares">Patamares</option>
-                        <option value="Itapuã">Itapuã</option>
-                        <option value="Piatã">Piatã</option>
-                        <option value="Stella Maris">Stella Maris</option>
-                        <option value="Boca do Rio">Boca do Rio</option>
-                        <option value="Imbuí">Imbuí</option>
-                        <option value="Alphaville">Alphaville</option>
-                        <option value="Centro">Centro</option>
-                    </optgroup>
-                    <optgroup label="Lauro de Freitas">
-                        <option value="Buraquinho">Buraquinho</option>
-                        <option value="Vilas do Atlântico">Vilas do Atlântico</option>
-                        <option value="Ipitanga">Ipitanga</option>
-                        <option value="Pitangueiras">Pitangueiras</option>
-                        <option value="Centro - Lauro de Freitas">Centro - Lauro de Freitas</option>
-                        <option value="Portão">Portão</option>
-                        <option value="Caji">Caji</option>
-                    </optgroup>
                 </select>
             </div>
             <div class="form-group">
@@ -3736,6 +3708,47 @@
                 .trim();
         }
 
+        function extractNeighborhood(location) {
+            const text = String(location || "").replace(/\s+/g, " ").trim();
+            if (!text) return "";
+            const byDash = text.split(" - ")[0]?.trim() || "";
+            const byComma = byDash.split(",")[0]?.trim() || "";
+            return byComma || byDash || text;
+        }
+
+        function refreshLocationOptionsFromProperties() {
+            const select = document.getElementById("localizacao");
+            if (!select) return;
+
+            const current = String(select.value || "");
+            const currentNeighborhood = extractNeighborhood(current);
+            const bucket = new Map();
+
+            for (const property of (Array.isArray(properties) ? properties : [])) {
+                const neighborhood = extractNeighborhood(property?.location);
+                const key = normalizeText(neighborhood);
+                if (!key) continue;
+                if (!bucket.has(key)) bucket.set(key, neighborhood);
+            }
+
+            const neighborhoods = [...bucket.values()].sort((a, b) =>
+                a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+            );
+
+            select.innerHTML = `<option value="">Todos os bairros</option>${
+                neighborhoods.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")
+            }`;
+
+            const wantedKey = normalizeText(currentNeighborhood);
+            if (!wantedKey) {
+                select.value = "";
+                return;
+            }
+
+            const option = Array.from(select.options).find((opt) => normalizeText(opt.value) === wantedKey);
+            select.value = option ? option.value : "";
+        }
+
         function normalizePriceInput(inputEl) {
             if (!inputEl) return;
             const raw = parsePriceInputValue(inputEl.value);
@@ -4020,6 +4033,7 @@
         function saveProperties() {
             properties = standardizePropertyCodes(properties);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+            refreshLocationOptionsFromProperties();
             initHeroSlideshow(getHeroSlidesFromProperties(12));
         }
 
