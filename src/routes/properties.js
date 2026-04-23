@@ -77,7 +77,7 @@ const propertySchema = z.object({
   is_published: z.union([z.boolean(), z.string()]).optional().nullable(),
   home_featured: z.union([z.boolean(), z.string()]).optional().nullable(),
   home_featured_order: z.union([z.coerce.number().int().min(1).max(3), z.literal(""), z.null()]).optional().nullable(),
-  image_urls: z.array(z.string().url()).optional().default([])
+  image_urls: z.array(z.string()).optional().default([])
 });
 const visibilitySchema = z.object({
   is_published: z.union([z.boolean(), z.string()])
@@ -112,6 +112,32 @@ function asBoolean(value, fallback = true) {
   if (["true", "1", "yes", "sim"].includes(normalized)) return true;
   if (["false", "0", "no", "nao", "não"].includes(normalized)) return false;
   return fallback;
+}
+
+function isSafeImageUrl(value) {
+  const text = asText(value);
+  if (!text) return false;
+  if (/^\/(?:uploads|public)\//i.test(text)) return true;
+  try {
+    const url = new URL(text);
+    return /^https?:$/i.test(url.protocol);
+  } catch (_) {
+    return false;
+  }
+}
+
+function sanitizeImageUrls(list) {
+  if (!Array.isArray(list)) return [];
+  const result = [];
+  const seen = new Set();
+  for (const item of list) {
+    const url = asText(item);
+    if (!isSafeImageUrl(url)) continue;
+    if (seen.has(url)) continue;
+    seen.add(url);
+    result.push(url);
+  }
+  return result;
 }
 
 function buildFallbackCode() {
@@ -158,7 +184,7 @@ function normalizePropertyBody(raw, fallback = {}) {
     is_published: asBoolean(raw.is_published, asBoolean(fallback.is_published, true)),
     home_featured: homeFeatured,
     home_featured_order: homeFeaturedOrder,
-    image_urls: Array.isArray(raw.image_urls) ? raw.image_urls : []
+    image_urls: sanitizeImageUrls(raw.image_urls)
   };
 }
 
