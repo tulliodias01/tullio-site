@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const helmet = require("helmet");
@@ -31,20 +31,20 @@ function requireAdminPanelAuth(req, res, next) {
   const pass = String(config.adminPanelPassword || "").trim();
 
   if (!user || !pass) {
-    return res.status(503).send("Admin indisponível: configure ADMIN_PANEL_USER e ADMIN_PANEL_PASSWORD.");
+    return res.status(503).send("Admin indisponÃ­vel: configure ADMIN_PANEL_USER e ADMIN_PANEL_PASSWORD.");
   }
 
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Basic ")) {
     res.setHeader("WWW-Authenticate", 'Basic realm="Admin Tullio Dias"');
-    return res.status(401).send("Autenticação obrigatória.");
+    return res.status(401).send("AutenticaÃ§Ã£o obrigatÃ³ria.");
   }
 
   const raw = Buffer.from(auth.slice(6), "base64").toString("utf8");
   const [inputUser = "", inputPass = ""] = raw.split(":");
   if (inputUser !== user || inputPass !== pass) {
     res.setHeader("WWW-Authenticate", 'Basic realm="Admin Tullio Dias"');
-    return res.status(401).send("Credenciais inválidas.");
+    return res.status(401).send("Credenciais invÃ¡lidas.");
   }
 
   return next();
@@ -149,11 +149,11 @@ function renderPropertyPage(property, images) {
       <div class="hero" style="background-image:url('${cover}');"></div>
       <div class="content">
         <h1>${property.title}</h1>
-        <p>${property.location} ${property.cep ? `• CEP ${property.cep}` : ""}</p>
+        <p>${property.location} ${property.cep ? `â€¢ CEP ${property.cep}` : ""}</p>
         <p>${safeDescription}</p>
         <p class="price">${Number(property.price).toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:0})}</p>
-        <p>${property.bedrooms} quartos • ${property.bathrooms} banheiros • ${property.area}m²</p>
-        <a class="btn" target="_blank" href="https://wa.me/5571992697769?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.title} (${property.code}).`) }">Falar no WhatsApp</a>
+        <p>${property.bedrooms} quartos â€¢ ${property.bathrooms} banheiros â€¢ ${property.area}mÂ²</p>
+        <a class="btn" target="_blank" href="https://wa.me/5571992697769?text=${encodeURIComponent(`OlÃ¡! Tenho interesse no imÃ³vel ${property.title} (${property.code}).`) }">Falar no WhatsApp</a>
       </div>
     </div>
   </div>
@@ -170,42 +170,13 @@ app.get("/admin/agendamentos", requireAdminPanelAuth, (_req, res) => {
 
 app.get("/imoveis/:slug", async (req, res) => {
   const row = await query("select * from properties where slug = $1 and is_published = true limit 1", [req.params.slug]);
-  if (!row.rows.length) return res.status(404).send("Imóvel não encontrado.");
+  if (!row.rows.length) return res.status(404).send("ImÃ³vel nÃ£o encontrado.");
   const property = row.rows[0];
   const images = await query("select image_url, is_cover from property_images where property_id = $1 order by sort_order asc", [property.id]);
   return res.send(renderPropertyPage(property, images.rows));
 });
 
-app.get("/", async (req, res) => {
-  const rawRef = String(req.query?.imovel || "").trim();
-
-  if (rawRef) {
-    const ref = decodeURIComponent(rawRef);
-    const refNoHash = ref.replace(/^#/, "").trim();
-    const refWithHash = refNoHash ? `#${refNoHash}` : ref;
-
-    try {
-      const found = await query(
-        `select slug from properties
-         where is_published = true
-           and (
-             lower(slug) = lower($1)
-             or lower(code) = lower($1)
-             or lower(code) = lower($2)
-             or lower(code) = lower($3)
-           )
-         limit 1`,
-        [ref, refNoHash, refWithHash]
-      );
-
-      if (found.rows.length && found.rows[0].slug) {
-        return res.redirect(302, `/imoveis/${encodeURIComponent(found.rows[0].slug)}`);
-      }
-    } catch (_) {
-      // fallback: render homepage
-    }
-  }
-
+app.get("/", (_req, res) => {
   return res.sendFile(path.join(process.cwd(), "tullio_dias_corretor.html"));
 });
 
@@ -213,3 +184,4 @@ app.listen(config.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Servidor rodando em http://localhost:${config.port}`);
 });
+
