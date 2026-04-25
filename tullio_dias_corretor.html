@@ -767,8 +767,6 @@
             margin-right: auto;
             position: relative;
             z-index: 10;
-            content-visibility: auto;
-            contain-intrinsic-size: 500px;
         }
 
         .search-form {
@@ -777,6 +775,7 @@
             gap: 1rem;
             align-items: flex-end;
         }
+        .search-form > * { min-width: 0; }
 
         .search-title-3d {
             margin: 0 0 1rem;
@@ -3067,6 +3066,17 @@
             }
             .search-form {
                 grid-template-columns: 1fr;
+            }
+            .search-section {
+                margin: 1.2rem 0.75rem 0;
+                padding: 1rem 0.85rem;
+                max-width: none;
+                width: auto;
+            }
+            .search-section .form-group input,
+            .search-section .form-group select,
+            .search-button {
+                width: 100%;
             }
             .td-about { padding: 1rem; }
             .td-about-right { grid-template-columns: 1fr; }
