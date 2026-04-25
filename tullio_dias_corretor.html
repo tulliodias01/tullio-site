@@ -3757,28 +3757,59 @@
             return byComma || byDash || text;
         }
 
+        function extractCityFromLocation(location) {
+            const text = String(location || "").replace(/\s+/g, " ").trim();
+            if (!text) return "";
+            const parts = text.split(" - ").map((p) => p.trim()).filter(Boolean);
+            if (parts.length >= 2) return parts[parts.length - 1];
+            return "";
+        }
+
+        function normalizeCityLabel(city) {
+            const key = normalizeText(city);
+            if (!key) return "Outras regiões";
+            if (key === "salvador") return "Salvador";
+            if (key === "lauro de freitas") return "Lauro de Freitas";
+            if (key === "camacari") return "Camaçari";
+            if (key === "dias d avila" || key === "dias de avila") return "Dias d'Ávila";
+            if (key === "simoes filho") return "Simões Filho";
+            if (key === "mata de sao joao") return "Mata de São João";
+            return city;
+        }
+
         function refreshLocationOptionsFromProperties() {
             const select = document.getElementById("localizacao");
             if (!select) return;
 
             const current = String(select.value || "");
             const currentNeighborhood = extractNeighborhood(current);
-            const bucket = new Map();
+            const cityBucket = new Map();
+            const cityOrder = ["Salvador", "Lauro de Freitas", "Camaçari", "Mata de São João", "Dias d'Ávila", "Simões Filho"];
 
             for (const property of (Array.isArray(properties) ? properties : [])) {
                 const neighborhood = extractNeighborhood(property?.location);
+                const city = normalizeCityLabel(extractCityFromLocation(property?.location));
                 const key = normalizeText(neighborhood);
-                if (!key) continue;
-                if (!bucket.has(key)) bucket.set(key, neighborhood);
+                if (!key || !city) continue;
+                if (!cityBucket.has(city)) cityBucket.set(city, new Map());
+                const map = cityBucket.get(city);
+                if (!map.has(key)) map.set(key, neighborhood);
             }
 
-            const neighborhoods = [...bucket.values()].sort((a, b) =>
-                a.localeCompare(b, "pt-BR", { sensitivity: "base" })
-            );
+            const orderedCities = [
+                ...cityOrder.filter((city) => cityBucket.has(city)),
+                ...[...cityBucket.keys()].filter((city) => !cityOrder.includes(city)).sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }))
+            ];
 
-            select.innerHTML = `<option value="">Todos os bairros</option>${
-                neighborhoods.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")
-            }`;
+            let html = `<option value="">Todos os bairros</option>`;
+            for (const city of orderedCities) {
+                const neighborhoods = [...cityBucket.get(city).values()].sort((a, b) =>
+                    a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+                );
+                const options = neighborhoods.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+                html += `<optgroup label="${escapeHtml(city)}">${options}</optgroup>`;
+            }
+            select.innerHTML = html;
 
             const wantedKey = normalizeText(currentNeighborhood);
             if (!wantedKey) {
