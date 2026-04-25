@@ -169,11 +169,13 @@ app.get("/admin/agendamentos", requireAdminPanelAuth, (_req, res) => {
 });
 
 app.get("/imoveis/:slug", async (req, res) => {
-  const row = await query("select * from properties where slug = $1 and is_published = true limit 1", [req.params.slug]);
-  if (!row.rows.length) return res.status(404).send("ImÃ³vel nÃ£o encontrado.");
-  const property = row.rows[0];
-  const images = await query("select image_url, is_cover from property_images where property_id = $1 order by sort_order asc", [property.id]);
-  return res.send(renderPropertyPage(property, images.rows));
+  const row = await query("select slug, code from properties where slug = $1 and is_published = true limit 1", [req.params.slug]);
+  if (!row.rows.length) return res.status(404).send("Imovel nao encontrado.");
+
+  const ref = String(row.rows[0].code || row.rows[0].slug || "").trim();
+  if (!ref) return res.status(404).send("Imovel nao encontrado.");
+
+  return res.redirect(302, `/?imovel=${encodeURIComponent(ref)}`);
 });
 
 app.get("/", (_req, res) => {
@@ -184,4 +186,5 @@ app.listen(config.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Servidor rodando em http://localhost:${config.port}`);
 });
+
 
