@@ -67,14 +67,21 @@
     .list-filters.leads{grid-template-columns:2fr 1fr}
     .muted{color:var(--muted);font-size:.82rem}
     #panel[data-tab="cadastro"] #section-imoveis,
-    #panel[data-tab="cadastro"] #section-leads{display:none}
+    #panel[data-tab="cadastro"] #section-leads,
+    #panel[data-tab="cadastro"] #section-agendamentos{display:none}
     #panel[data-tab="imoveis"] #section-cadastro,
-    #panel[data-tab="imoveis"] #section-leads{display:none}
+    #panel[data-tab="imoveis"] #section-leads,
+    #panel[data-tab="imoveis"] #section-agendamentos{display:none}
     #panel[data-tab="leads"] #section-cadastro,
-    #panel[data-tab="leads"] #section-imoveis{display:none}
+    #panel[data-tab="leads"] #section-imoveis,
+    #panel[data-tab="leads"] #section-agendamentos{display:none}
+    #panel[data-tab="agendamentos"] #section-cadastro,
+    #panel[data-tab="agendamentos"] #section-imoveis,
+    #panel[data-tab="agendamentos"] #section-leads{display:none}
     #panel[data-tab="cadastro"] .grid,
     #panel[data-tab="imoveis"] .grid,
-    #panel[data-tab="leads"] .grid{grid-template-columns:1fr}
+    #panel[data-tab="leads"] .grid,
+    #panel[data-tab="agendamentos"] .grid{grid-template-columns:1fr}
     .tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
     .tag{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d4e2ef;border-radius:10px;padding:8px}
     .tag input{width:auto;padding:0;margin:0}
@@ -158,6 +165,7 @@
         <button class="btn alt" type="button" id="go-cadastro">Cadastro</button>
         <button class="btn alt" type="button" id="go-imoveis">Imoveis</button>
         <button class="btn alt" type="button" id="go-leads">Leads</button>
+        <button class="btn alt" type="button" id="go-agendamentos">Agendamentos</button>
       </div>
 
       <div class="card section-anchor" id="section-cadastro">
@@ -445,6 +453,18 @@
           <div class="muted" id="leads-filter-info"></div>
           <div id="leads"></div>
         </div>
+        <div class="card section-anchor" id="section-agendamentos">
+          <div class="toolbar">
+            <h3>Agendamentos</h3>
+            <span class="pill" id="agendamentos-count">0 agendamentos</span>
+          </div>
+          <div class="list-filters leads">
+            <input id="agendamentos-search" placeholder="Buscar por nome, telefone, email ou mensagem...">
+            <input id="agendamentos-date" type="date" title="Filtrar por data do agendamento">
+          </div>
+          <div class="muted" id="agendamentos-filter-info"></div>
+          <div id="agendamentos"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -599,10 +619,10 @@
     function setPanelTab(tab){
       const panel = q("panel");
       if (!panel) return;
-      const next = ["cadastro","imoveis","leads"].includes(tab) ? tab : "imoveis";
+      const next = ["cadastro","imoveis","leads","agendamentos"].includes(tab) ? tab : "imoveis";
       panel.dataset.tab = next;
-      const map = { cadastro:"go-cadastro", imoveis:"go-imoveis", leads:"go-leads" };
-      ["go-cadastro","go-imoveis","go-leads"].forEach((id) => q(id)?.classList.remove("active"));
+      const map = { cadastro:"go-cadastro", imoveis:"go-imoveis", leads:"go-leads", agendamentos:"go-agendamentos" };
+      ["go-cadastro","go-imoveis","go-leads","go-agendamentos"].forEach((id) => q(id)?.classList.remove("active"));
       q(map[next])?.classList.add("active");
     }
     function showToast(message, type = "info", timeoutMs = 3600){
@@ -1946,6 +1966,40 @@
       applyLeadsFilters();
     }
 
+    function renderAgendamentos(items){
+      q("agendamentos").innerHTML = items.map((a) => `
+        <div class="item">
+          <strong>${a.name || "Sem nome"}</strong><br>
+          ${(a.phone || "-")}${a.email ? ` - ${a.email}` : ""}<br>
+          <small><strong>Origem:</strong> ${a.source || "-"}</small><br>
+          <small><strong>Data:</strong> ${formatDateTime(a.created_at)}</small><br>
+          <small>${a.message || ""}</small>
+        </div>
+      `).join("");
+    }
+
+    function applyAgendamentosFilters(){
+      const all = Array.isArray(window._agendamentos) ? window._agendamentos : [];
+      const term = normalizeText(q("agendamentos-search")?.value || "");
+      const agDate = q("agendamentos-date")?.value || "";
+      const filtered = all.filter((a) => {
+        const haystack = normalizeText(`${a.name || ""} ${a.phone || ""} ${a.email || ""} ${a.message || ""} ${a.source || ""}`);
+        const matchTerm = !term || haystack.includes(term);
+        const matchDate = !agDate || toDateInputValue(a.created_at) === agDate;
+        return matchTerm && matchDate;
+      });
+      renderAgendamentos(filtered);
+      q("agendamentos-filter-info").textContent = `${filtered.length} de ${all.length} exibidos`;
+    }
+
+    async function loadAgendamentos() {
+      const data = await api("/api/admin/agendamentos");
+      if (!data.ok) return;
+      window._agendamentos = data.items;
+      q("agendamentos-count").textContent = `${window._agendamentos.length} agendamentos`;
+      applyAgendamentosFilters();
+    }
+
     async function exportBackup() {
       const data = await api("/api/admin/backup/export");
       if (!data.ok) {
@@ -1958,6 +2012,7 @@
     async function loadAll() {
       await loadProperties();
       await loadLeads();
+      await loadAgendamentos();
     }
 
     q("login-btn").addEventListener("click", login);
@@ -2056,9 +2111,12 @@
     q("list-batch-delete").addEventListener("click", batchDeleteProperties);
     q("leads-search").addEventListener("input", applyLeadsFilters);
     q("leads-date").addEventListener("change", applyLeadsFilters);
+    q("agendamentos-search").addEventListener("input", applyAgendamentosFilters);
+    q("agendamentos-date").addEventListener("change", applyAgendamentosFilters);
     q("go-cadastro").addEventListener("click", () => setPanelTab("cadastro"));
     q("go-imoveis").addEventListener("click", () => setPanelTab("imoveis"));
     q("go-leads").addEventListener("click", () => setPanelTab("leads"));
+    q("go-agendamentos").addEventListener("click", () => setPanelTab("agendamentos"));
     q("list-new-property").addEventListener("click", () => {
       clearForm();
       setPanelTab("cadastro");

@@ -40,6 +40,13 @@ router.get("/leads", async (_req, res) => {
   const result = await query("select * from leads order by created_at desc");
   return res.json({ ok: true, items: result.rows });
 });
+router.get("/agendamentos", async (_req, res) => {
+  const result = await query(
+    "select * from leads where source = $1 or message ilike $2 order by created_at desc limit 500",
+    ["whatsapp_n8n_agendamento", "AGENDAMENTO_CONFIRMADO%"]
+  );
+  return res.json({ ok: true, items: result.rows });
+});
 
 router.get("/analytics", async (_req, res) => {
   const result = await query("select * from analytics_events order by created_at desc limit 500");
