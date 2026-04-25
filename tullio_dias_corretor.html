@@ -67,6 +67,26 @@
             --success: #27ae60;
         }
 
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        img,
+        svg,
+        video,
+        canvas {
+            max-width: 100%;
+        }
+
         body {
             font-family: 'Montserrat', sans-serif;
             color: var(--dark);
