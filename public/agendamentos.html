@@ -1,0 +1,114 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agendamentos | Tullio Imoveis</title>
+  <style>
+    body{font-family:Segoe UI,Arial,sans-serif;background:#f2f6fb;color:#1f3448;margin:0}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 12px;border-radius:10px;border:1px solid #c8d6e5;background:#fff;color:#1f3448;text-decoration:none;font-weight:600;cursor:pointer}
+    .btn.primary{background:#1e3a5f;color:#fff;border-color:#16304f}
+    .card{margin-top:14px;background:#fff;border:1px solid #d9e4ef;border-radius:14px;box-shadow:0 8px 20px rgba(14,34,56,.08);overflow:hidden}
+    table{width:100%;border-collapse:collapse;min-width:920px}
+    th,td{padding:10px 12px;border-bottom:1px solid #eef3f8;text-align:left;vertical-align:top}
+    th{background:#f8fbff;font-size:.78rem;letter-spacing:.02em;text-transform:uppercase;color:#34506b}
+    .muted{color:#60758a;font-size:.85rem}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#e9f4ff;border:1px solid #cbe1f8;color:#21486e;font-size:.75rem;font-weight:700}
+    .table-wrap{overflow:auto}
+    .empty{padding:14px;color:#60758a}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>Agendamentos</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="/admin">Voltar ao Admin</a>
+        <button class="btn primary" id="reload-btn" type="button">Atualizar</button>
+      </div>
+    </div>
+    <p class="muted">Lista de agendamentos confirmados via WhatsApp/N8N.</p>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>Imovel</th>
+              <th>Preferencia</th>
+              <th>Protocolo</th>
+              <th>Origem</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty" style="display:none">Nenhum agendamento encontrado.</div>
+    </div>
+  </div>
+
+  <script>
+    function extractField(message, key){
+      const src = String(message || '');
+      const m = src.match(new RegExp(key + '=([^|]+)'));
+      return m ? m[1].trim() : '';
+    }
+
+    function fmtDate(v){
+      if(!v) return '-';
+      const d = new Date(v);
+      if(Number.isNaN(d.getTime())) return String(v);
+      return d.toLocaleString('pt-BR');
+    }
+
+    async function loadSchedules(){
+      const tbody = document.getElementById('tbody');
+      const empty = document.getElementById('empty');
+      tbody.innerHTML = '<tr><td colspan="7" class="muted">Carregando...</td></tr>';
+      try{
+        const r = await fetch('/api/admin/agendamentos', { credentials: 'include' });
+        if(!r.ok){
+          if(r.status === 401){
+            tbody.innerHTML = '<tr><td colspan="7">Sessao expirada. Entre novamente no <a href="/admin">admin</a>.</td></tr>';
+            return;
+          }
+          throw new Error('Falha ao consultar agendamentos');
+        }
+        const data = await r.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        if(!items.length){
+          tbody.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        tbody.innerHTML = items.map((x) => {
+          const msg = String(x.message || '');
+          const protocolo = extractField(msg, 'protocolo');
+          const imovel = extractField(msg, 'imovel') || x.property_slug || '-';
+          const pref = extractField(msg, 'preferencia') || '-';
+          return '<tr>' +
+            '<td>' + fmtDate(x.created_at) + '</td>' +
+            '<td>' + (x.name || '-') + '</td>' +
+            '<td>' + (x.phone || '-') + '</td>' +
+            '<td>' + imovel + '</td>' +
+            '<td>' + pref + '</td>' +
+            '<td><span class="tag">' + (protocolo || '-') + '</span></td>' +
+            '<td>' + (x.source || '-') + '</td>' +
+          '</tr>';
+        }).join('');
+      }catch(err){
+        tbody.innerHTML = '<tr><td colspan="7">Erro ao carregar agendamentos.</td></tr>';
+      }
+    }
+
+    document.getElementById('reload-btn').addEventListener('click', loadSchedules);
+    loadSchedules();
+  </script>
+</body>
+</html>

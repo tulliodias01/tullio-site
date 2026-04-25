@@ -164,6 +164,9 @@ function renderPropertyPage(property, images) {
 app.get("/admin", requireAdminPanelAuth, (_req, res) => {
   res.sendFile(path.join(process.cwd(), "public", "admin.html"));
 });
+app.get("/admin/agendamentos", requireAdminPanelAuth, (_req, res) => {
+  res.sendFile(path.join(process.cwd(), "public", "agendamentos.html"));
+});
 
 app.get("/imoveis/:slug", async (req, res) => {
   const row = await query("select * from properties where slug = $1 and is_published = true limit 1", [req.params.slug]);
@@ -173,8 +176,37 @@ app.get("/imoveis/:slug", async (req, res) => {
   return res.send(renderPropertyPage(property, images.rows));
 });
 
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(process.cwd(), "tullio_dias_corretor.html"));
+app.get("/", async (req, res) => {
+  const rawRef = String(req.query?.imovel || "").trim();
+
+  if (rawRef) {
+    const ref = decodeURIComponent(rawRef);
+    const refNoHash = ref.replace(/^#/, "").trim();
+    const refWithHash = refNoHash ? `#${refNoHash}` : ref;
+
+    try {
+      const found = await query(
+        `select slug from properties
+         where is_published = true
+           and (
+             lower(slug) = lower($1)
+             or lower(code) = lower($1)
+             or lower(code) = lower($2)
+             or lower(code) = lower($3)
+           )
+         limit 1`,
+        [ref, refNoHash, refWithHash]
+      );
+
+      if (found.rows.length && found.rows[0].slug) {
+        return res.redirect(302, `/imoveis/${encodeURIComponent(found.rows[0].slug)}`);
+      }
+    } catch (_) {
+      // fallback: render homepage
+    }
+  }
+
+  return res.sendFile(path.join(process.cwd(), "tullio_dias_corretor.html"));
 });
 
 app.listen(config.port, () => {
