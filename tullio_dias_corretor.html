@@ -2961,14 +2961,20 @@
             font-size: 2rem;
             font-weight: 400;
             line-height: 1;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         .td-stat span {
+            display: block;
             color: var(--td-muted);
             letter-spacing: 0.18em;
             text-transform: uppercase;
             font-size: 0.68rem;
             overflow-wrap: anywhere;
             word-break: break-word;
+            white-space: normal;
+            line-height: 1.45;
         }
 
         @keyframes heroZoom {
@@ -3043,6 +3049,7 @@
                 grid-template-columns: 1fr;
             }
             .td-about { padding: 1rem; }
+            .td-stat span { letter-spacing: 0.08em; }
             .footer-content {
                 grid-template-columns: 1fr;
                 gap: 1.15rem;
