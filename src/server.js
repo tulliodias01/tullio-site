@@ -168,6 +168,10 @@ app.get("/admin/agendamentos", requireAdminPanelAuth, (_req, res) => {
   res.sendFile(path.join(process.cwd(), "public", "agendamentos.html"));
 });
 
+app.get("/politica-de-privacidade.html", (_req, res) => {
+  res.sendFile(path.join(process.cwd(), "politica-de-privacidade.html"));
+});
+
 app.get("/imoveis/:slug", async (req, res) => {
   const row = await query("select slug, code from properties where slug = $1 and is_published = true limit 1", [req.params.slug]);
   if (!row.rows.length) return res.status(404).send("Imovel nao encontrado.");
