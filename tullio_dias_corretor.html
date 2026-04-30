@@ -2002,6 +2002,19 @@
             margin-bottom: 1rem;
         }
 
+        .no-results-card {
+            color: #24384c;
+        }
+
+        .no-results-card h3 {
+            color: var(--primary);
+        }
+
+        .no-results-card p {
+            color: #4f5b66;
+            margin: 0;
+        }
+
         .admin-form .form-row {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4690,7 +4703,7 @@
             const items = Array.isArray(list) ? list : getHomeFeaturedProperties(3);
 
             if (!items.length) {
-                container.innerHTML = '<div class="admin-card"><h3>Nenhum imóvel encontrado</h3><p>Ajuste os filtros de busca para visualizar mais opções.</p></div>';
+                container.innerHTML = '<div class="admin-card no-results-card"><h3>Nenhum imóvel encontrado</h3><p>Ajuste os filtros de busca para visualizar mais opções.</p></div>';
                 return;
             }
 
