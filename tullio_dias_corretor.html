@@ -4660,7 +4660,7 @@
             modalShare.href = buildPropertyLink(property);
         }
 
-        function getHomeFeaturedProperties(limit = 3) {
+        function getHomeFeaturedProperties(limit = 12) {
             const featuredHome = properties
                 .filter((property) => property?.home_featured === true)
                 .sort((a, b) => {
@@ -4699,7 +4699,7 @@
         function renderProperties(list = null) {
             const container = document.getElementById("properties-list");
             if (!container) return;
-            const items = Array.isArray(list) ? list : getHomeFeaturedProperties(3);
+            const items = Array.isArray(list) ? list : getHomeFeaturedProperties(12);
 
             if (!items.length) {
                 container.innerHTML = '<div class="admin-card no-results-card"><h3>Nenhum imóvel encontrado</h3><p>Ajuste os filtros de busca para visualizar mais opções.</p></div>';
