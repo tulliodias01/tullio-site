@@ -3776,6 +3776,57 @@
             return byComma || byDash || text;
         }
 
+        function isSoldProperty(property) {
+            return normalizeText(property?.status || "").includes("vendido");
+        }
+
+        function isRentalProperty(property) {
+            const RENT_MAX_PRICE = 30000;
+            return Number(property?.price || 0) > 0 && Number(property?.price || 0) <= RENT_MAX_PRICE;
+        }
+
+        function isLaunchSearchProperty(property) {
+            const text = normalizeText([
+                property?.type || "",
+                property?.status || "",
+                property?.badge || "",
+                property?.code || ""
+            ].join(" "));
+            return text.includes("lancamento") || text.includes("em obras") || text.includes("obra") || text.includes("lanc ");
+        }
+
+        function matchesSearchType(property, selectedTypeRaw) {
+            const selectedType = normalizeText(selectedTypeRaw || "Todos");
+            if (selectedType === "todos") return true;
+            if (selectedType === "lancamento") return isLaunchSearchProperty(property);
+            if (selectedType === "imovel") return !isLaunchSearchProperty(property);
+
+            const current = normalizeText(property?.type || "");
+            if (!current) return false;
+            if (current === selectedType) return true;
+            if (selectedType === "terreno") return current.includes("terreno") || current.includes("lote");
+            if (selectedType === "apartamento") return current.includes("apartamento") || current.includes("apto");
+            if (selectedType === "casa") return current.includes("casa") || current.includes("village");
+            if (selectedType === "comercial") return current.includes("comercial") || current.includes("sala") || current.includes("loja");
+            return false;
+        }
+
+        function matchesSearchObjective(property, objectiveRaw) {
+            const objective = String(objectiveRaw || "Todos");
+            const sold = isSoldProperty(property);
+            if (objective === "Todos") return !sold;
+            if (objective === "Comprar" || objective === "Compra") return !isRentalProperty(property) && !sold && !isLaunchSearchProperty(property);
+            if (objective === "Alugar" || objective === "Aluguel") return isRentalProperty(property) && !sold;
+            if (objective === "Lançamentos") return isLaunchSearchProperty(property) && !sold;
+            return !sold;
+        }
+
+        function matchesLocationOptionScope(property) {
+            const typeValue = document.getElementById("tipo")?.value || "Todos";
+            const objectiveValue = document.getElementById("objetivo")?.value || "Todos";
+            return matchesSearchType(property, typeValue) && matchesSearchObjective(property, objectiveValue);
+        }
+
         function refreshLocationOptionsFromProperties() {
             const select = document.getElementById("localizacao");
             if (!select) return;
@@ -3785,6 +3836,7 @@
             const bucket = new Map();
 
             for (const property of (Array.isArray(properties) ? properties : [])) {
+                if (!matchesLocationOptionScope(property)) continue;
                 const neighborhood = extractNeighborhood(property?.location);
                 const key = normalizeText(neighborhood);
                 if (!key) continue;
@@ -5094,7 +5146,7 @@
                 const { isSold, isRental } = classifyObjective(property);
                 const matchObjetivo = objetivo === "Todos"
                     ? !isSold
-                    : ((objetivo === "Comprar" || objetivo === "Compra") && !isRental && !isSold)
+                    : ((objetivo === "Comprar" || objetivo === "Compra") && !isRental && !isSold && !isLaunchProperty(property))
                     || ((objetivo === "Alugar" || objetivo === "Aluguel") && isRental && !isSold)
                     || (objetivo === "Lançamentos" && isLaunchProperty(property) && !isSold);
 
@@ -5195,6 +5247,8 @@
             const adminBathrooms = document.getElementById("admin-bathrooms");
             const adminBadge = document.getElementById("admin-badge");
             const maxPriceInput = document.getElementById("preco");
+            const propertyTypeSelect = document.getElementById("tipo");
+            const objectiveSelect = document.getElementById("objetivo");
             const imageLightbox = document.getElementById("image-lightbox");
             const imageLightboxClose = document.getElementById("image-lightbox-close");
             const imageLightboxPrev = document.getElementById("image-lightbox-prev");
@@ -5213,6 +5267,8 @@
             if (imageLightboxClose) imageLightboxClose.addEventListener("click", closeImageLightbox);
             if (imageLightboxPrev) imageLightboxPrev.addEventListener("click", showPrevImageLightbox);
             if (imageLightboxNext) imageLightboxNext.addEventListener("click", showNextImageLightbox);
+            if (propertyTypeSelect) propertyTypeSelect.addEventListener("change", refreshLocationOptionsFromProperties);
+            if (objectiveSelect) objectiveSelect.addEventListener("change", refreshLocationOptionsFromProperties);
             if (maxPriceInput) {
                 maxPriceInput.addEventListener("input", () => {
                     const cursorAtEnd = maxPriceInput.selectionStart === maxPriceInput.value.length;
