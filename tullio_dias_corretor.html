@@ -4661,36 +4661,62 @@
         }
 
         function getHomeFeaturedProperties(limit = 12) {
-            const featuredHome = properties
-                .filter((property) => property?.home_featured === true)
-                .sort((a, b) => {
-                    const oa = Number.isFinite(Number(a?.home_featured_order)) ? Number(a.home_featured_order) : 999;
-                    const ob = Number.isFinite(Number(b?.home_featured_order)) ? Number(b.home_featured_order) : 999;
-                    if (oa !== ob) return oa - ob;
-                    return Number(b?.price || 0) - Number(a?.price || 0);
-                })
-                .slice(0, limit);
-            if (featuredHome.length >= limit) return featuredHome;
+            const RENT_MAX_PRICE = 30000;
+            const isSold = (property) => normalizeText(property?.status || "").includes("vendido");
+            const isRental = (property) => Number(property?.price || 0) > 0 && Number(property?.price || 0) <= RENT_MAX_PRICE;
+            const isLaunch = (property) => {
+                const text = normalizeText([
+                    property?.type || "",
+                    property?.status || "",
+                    property?.badge || "",
+                    property?.code || ""
+                ].join(" "));
+                return text.includes("lancamento") || text.includes("em obras") || text.includes("obra") || text.includes("lanc ");
+            };
+            const isLand = (property) => {
+                const text = normalizeText(`${property?.type || ""} ${property?.title || ""}`);
+                return text.includes("terreno") || text.includes("lote");
+            };
+            const sortHomePriority = (a, b) => {
+                const fa = a?.home_featured === true ? 0 : 1;
+                const fb = b?.home_featured === true ? 0 : 1;
+                if (fa !== fb) return fa - fb;
+                const oa = Number.isFinite(Number(a?.home_featured_order)) ? Number(a.home_featured_order) : 999;
+                const ob = Number.isFinite(Number(b?.home_featured_order)) ? Number(b.home_featured_order) : 999;
+                if (oa !== ob) return oa - ob;
+                const ba = normalizeText(a?.badge || "").includes("destaque") ? 0 : 1;
+                const bb = normalizeText(b?.badge || "").includes("destaque") ? 0 : 1;
+                if (ba !== bb) return ba - bb;
+                return Number(b?.price || 0) - Number(a?.price || 0);
+            };
 
-            const selected = [...featuredHome];
-            const selectedIds = new Set(selected.map((p) => String(p?.id || "")));
+            const available = properties.filter((property) => !isSold(property));
+            const buckets = [
+                available.filter(isLaunch).sort(sortHomePriority),
+                available.filter((property) => !isLaunch(property) && !isLand(property) && !isRental(property)).sort(sortHomePriority),
+                available.filter((property) => !isLaunch(property) && isRental(property)).sort(sortHomePriority),
+                available.filter((property) => !isLaunch(property) && isLand(property)).sort(sortHomePriority)
+            ];
+            const fallback = [...available].sort(sortHomePriority);
+            const selected = [];
+            const selectedIds = new Set();
 
-            const featuredByBadge = properties.filter((property) => {
-                if (selectedIds.has(String(property?.id || ""))) return false;
-                const badge = normalizeText(property?.badge || "");
-                return badge.includes("destaque");
-            });
-
-            for (const property of featuredByBadge) {
-                if (selected.length >= limit) break;
-                selected.push(property);
-                selectedIds.add(String(property?.id || ""));
+            while (selected.length < limit && buckets.some((bucket) => bucket.length)) {
+                for (const bucket of buckets) {
+                    while (bucket.length && selectedIds.has(String(bucket[0]?.id || ""))) bucket.shift();
+                    if (!bucket.length) continue;
+                    const property = bucket.shift();
+                    selected.push(property);
+                    selectedIds.add(String(property?.id || ""));
+                    if (selected.length >= limit) break;
+                }
             }
 
-            for (const property of properties) {
+            for (const property of fallback) {
                 if (selected.length >= limit) break;
                 if (selectedIds.has(String(property?.id || ""))) continue;
                 selected.push(property);
+                selectedIds.add(String(property?.id || ""));
             }
 
             return selected.slice(0, limit);
